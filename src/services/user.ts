@@ -21,6 +21,7 @@ export const userService = new Elysia({ name: "user/service" })
     signIn: t.Object({
       email: t.String(),
       password: t.String(),
+      returnTo: t.Optional(t.String()),
     }),
     session: t.Cookie({
       auth: t.String(),

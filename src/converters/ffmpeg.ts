@@ -1,8 +1,7 @@
-import {
-  type ChildProcess,
-  execFile as execFileOriginal,
-  type ExecFileOptions,
-} from "node:child_process";
+import { type ChildProcess, type ExecFileOptions } from "node:child_process";
+
+import { boundedExecFile as execFileOriginal } from "../helpers/boundedExec";
+import { resourceLimits } from "../helpers/resourceLimits";
 
 // ffmpeg streams continuous progress to stderr, so a long conversion overflows
 // execFile's 1 MB default maxBuffer and fails with "stderr maxBuffer length
@@ -788,10 +787,27 @@ export async function convert(
         .map((arg) => arg.trim())
     : [];
 
+  const threadArgs = ["-threads", String(resourceLimits.ffmpegThreads)];
+  const filterArgs = [
+    "-filter_threads",
+    String(resourceLimits.ffmpegThreads),
+    "-filter_complex_threads",
+    String(resourceLimits.ffmpegThreads),
+  ];
   return new Promise((resolve, reject) => {
     execFile(
       "ffmpeg",
-      [...ffmpegArgs, "-i", filePath, ...ffmpegOutputArgs, ...extraArgs, targetPath],
+      [
+        ...filterArgs,
+        ...ffmpegArgs,
+        ...threadArgs,
+        "-i",
+        filePath,
+        ...ffmpegOutputArgs,
+        ...extraArgs,
+        ...threadArgs,
+        targetPath,
+      ],
       { maxBuffer: FFMPEG_MAX_BUFFER },
       (error, stdout, stderr) => {
         if (error) {

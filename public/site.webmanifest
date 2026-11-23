@@ -1,6 +1,7 @@
 {
-  "name": "ConvertX | Self Hosted File Converter",
-  "short_name": "ConvertX",
+  "name": "大肥鱼格式工坊",
+  "short_name": "大肥鱼格式工坊",
+  "lang": "zh-CN",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -13,7 +14,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#a5d601",
-  "background_color": "#13171f",
+  "theme_color": "#edf5ff",
+  "background_color": "#edf5ff",
   "display": "standalone"
 }

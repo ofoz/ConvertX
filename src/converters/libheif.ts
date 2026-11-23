@@ -1,5 +1,4 @@
-import { execFile as execFileOriginal } from "child_process";
-
+import { boundedExecFile as execFileOriginal } from "../helpers/boundedExec";
 import { ExecFileFn } from "./types";
 
 export const properties = {

@@ -47,6 +47,34 @@ describe("GET /history", () => {
     );
     expect(body).toContain(`href="/results/${newer}"`);
     expect(body).toContain(`action="/delete/${newer}"`);
+    expect(body).toContain("转换历史");
+    expect(body).toContain("任务列表");
+  });
+
+  test("paginates in SQL order and normalizes invalid pages", async () => {
+    const user = await createUser();
+    const jobs = Array.from({ length: 21 }, (_, index) =>
+      createJob(user.id, { numFiles: 1, files: [file(`page-${index}`)] }),
+    );
+    const first = await historyOf(user.token);
+    expect(first).toContain(`id="job-row-${jobs[20]}"`);
+    expect(first).not.toContain(`id="job-row-${jobs[0]}"`);
+    expect(first).toContain("第 1 / 2 页");
+    expect(first).toContain('aria-current="page">1</span>');
+    expect(first).toContain('href="/history?page=2"');
+
+    const second = await (
+      await request("/history?page=2", { cookies: { auth: user.token } })
+    ).text();
+    expect(second).toContain(`id="job-row-${jobs[0]}"`);
+    expect(second).not.toContain(`id="job-row-${jobs[20]}"`);
+    expect(second).toContain('aria-current="page">2</span>');
+    expect(second).toContain('href="/history?page=1"');
+
+    const invalid = await (await request("/history?page=not-a-page", { cookies: { auth: user.token } })).text();
+    expect(invalid).toContain('aria-current="page">1</span>');
+    const overflow = await (await request("/history?page=999", { cookies: { auth: user.token } })).text();
+    expect(overflow).toContain('aria-current="page">2</span>');
   });
 
   test("shows progress and file details of a job", async () => {
@@ -64,9 +92,8 @@ describe("GET /history", () => {
     );
     const details = body.slice(body.indexOf(`id="details-${job}"`));
 
-    expect(row).toContain("<td>3</td>");
-    expect(row).toContain('<td class="max-sm:hidden">2</td>');
-    expect(row).toContain("<td>pending</td>");
+    expect(row).toContain("3 个文件");
+    expect(body).toContain("处理中");
     expect(details).toContain('title="a.vcf"');
     expect(details).toContain('title="b.csv"');
   });
@@ -78,6 +105,8 @@ describe("GET /history", () => {
     const body = await historyOf(user.token);
 
     expect(body).not.toContain(`id="job-row-${empty}"`);
+    expect(body).toContain("这里还没有转换记录");
+    expect(body).toContain('href="/" class="btn-primary"');
   });
 
   test("does not show other users' jobs", async () => {
@@ -106,7 +135,8 @@ describe("GET /history", () => {
     // neither the text nor the title attribute can be broken out of
     expect(body).not.toContain('"><script>');
     expect(body).not.toContain("<b>pending</b>");
+    expect(body).toContain("转换历史");
+    expect(body).toContain("状态未知");
     expect(body).toContain("&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;.vcf");
-    expect(body).toContain("&lt;b&gt;pending&lt;/b&gt;");
   });
 });

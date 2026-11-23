@@ -212,5 +212,19 @@ if (process.env.NODE_ENV === "production") {
     }
   });
 
+  // pdf2docx has no --version flag (it exits non-zero on unknown arguments), so
+  // read the installed package metadata through pipx instead.
+  exec("pipx runpip pdf2docx show pdf2docx", (error, stdout) => {
+    if (error) {
+      console.error("pdf2docx is not installed, PDF to Word will fall back to other engines");
+      return;
+    }
+
+    const ver = stdout.match(/^Version:\s*([^\r\n]+)$/m)?.[1]?.trim();
+    if (ver) {
+      console.log(`pdf2docx v${ver}`);
+    }
+  });
+
   console.log(`Bun v${Bun.version}`);
 }

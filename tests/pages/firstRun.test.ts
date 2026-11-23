@@ -17,7 +17,10 @@ function findUser(email: string) {
 describe("first run", () => {
   test("shows the account setup form", () => {
     expect(firstRun.setup.status).toBe(200);
-    expect(firstRun.setup.body).toContain("Welcome to ConvertX!");
+    expect(firstRun.setup.body).toContain("欢迎使用大肥鱼格式工坊");
+    expect(firstRun.setup.body).toContain("邮箱地址");
+    expect(firstRun.setup.body).toContain('autocomplete="new-password"');
+    expect(firstRun.setup.body).toContain('name="confirmPassword"');
     expect(firstRun.setup.body).toContain('action="/register"');
   });
 
@@ -26,9 +29,32 @@ describe("first run", () => {
     expect(firstRun.login.location).toBe("/setup");
   });
 
-  test("sends visitors of the home page to the setup", () => {
-    expect(firstRun.home.status).toBe(302);
-    expect(firstRun.home.location).toBe("/setup");
+  test("shows the public workspace before the first account without cookies", () => {
+    expect(firstRun.home.status).toBe(200);
+    expect(firstRun.home.location).toBeNull();
+    expect(firstRun.home.cookies).toEqual([]);
+    expect(firstRun.home.body).toContain('data-requires-auth="true"');
+    expect(firstRun.home.body).toContain('data-login-url="/setup"');
+    expect(firstRun.home.body).toContain('data-register-url="/setup"');
+    expect(firstRun.home.body).not.toMatch(/data-job-id="\d+"/);
+    expect(firstRun.home.body).toContain('data-format-category="documents"');
+  });
+
+  test("keeps setup open when the first password confirmation is wrong", () => {
+    expect(firstRun.mismatch.status).toBe(400);
+    expect(firstRun.mismatch.body).toContain("两次输入的密码不一致");
+    expect(firstRun.mismatch.cookies.some((cookie) => cookie.startsWith("auth="))).toBe(false);
+    expect(firstRun.setupAfterMismatch.status).toBe(200);
+    expect(firstRun.setupAfterMismatch.body).toContain('name="confirmPassword"');
+  });
+
+  test("preserves a conversion selection through initial account setup", () => {
+    expect(firstRun.setupResume.status).toBe(200);
+    expect(firstRun.setupResume.body).toContain('name="returnTo"');
+    expect(firstRun.setupResume.body).toContain("/?to=docx");
+    expect(firstRun.setupResume.body).toContain('name="confirmPassword"');
+    expect(firstRun.loginResume.status).toBe(302);
+    expect(firstRun.loginResume.location).toBe("/setup?next=%2F%3Fto%3Ddocx");
   });
 
   test("registers the first account although registration is closed", async () => {

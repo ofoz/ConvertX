@@ -1,0 +1,10 @@
+
+/* History pagination */
+.sx-history-pagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding: 0.8rem 0.25rem; }
+.sx-history-page-summary { color: var(--text-muted); font-size: 0.8rem; }
+.sx-history-page-links { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 0.35rem; }
+.sx-history-page { display: inline-grid; place-items: center; min-width: 2rem; min-height: 2rem; padding-inline: 0.45rem; border: 1px solid var(--border); border-radius: 0.45rem; color: var(--text-muted); font-size: 0.8rem; text-decoration: none; }
+.sx-history-page:hover { border-color: var(--primary); color: var(--primary); }
+.sx-history-page.is-current { border-color: var(--primary); background: var(--primary); color: var(--contrast); font-weight: 650; }
+.sx-history-pagination .is-disabled { opacity: 0.45; pointer-events: none; }
+@media (max-width: 600px) { .sx-history-pagination { align-items: flex-start; flex-direction: column; } .sx-history-page-links { justify-content: flex-start; } }

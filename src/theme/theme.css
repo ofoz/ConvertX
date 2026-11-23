@@ -1,47 +1,43 @@
 :root {
-  /* Light mode */
-  --contrast: oklch(100% 0 0);
-  /* Neutral colors - Gray */
-  --neutral-950: oklch(98.5% 0.002 247.839);
-  --neutral-900: oklch(96.7% 0.003 264.542);
-  --neutral-800: oklch(92.8% 0.006 264.531);
-  --neutral-700: oklch(87.2% 0.01 258.338);
-  --neutral-600: oklch(70.7% 0.022 261.325);
-  --neutral-500: oklch(55.1% 0.027 264.364);
-  --neutral-400: oklch(44.6% 0.03 256.802);
-  --neutral-300: oklch(37.3% 0.034 259.733);
-  --neutral-200: oklch(26.9% 0 0);
-  --neutral-100: oklch(21% 0.034 264.665);
-  --neutral-50: oklch(13% 0.028 261.692);
-  /* lime-700 */
-  --accent-600: oklch(53.2% 0.157 131.589);
-  /* lime-600 */
-  --accent-500: oklch(64.8% 0.2 131.684);
-  /* lime-500 */
-  --accent-400: oklch(76.8% 0.233 130.85);
-}
+  color-scheme: light;
 
-@media (prefers-color-scheme: dark) {
-  /* Dark mode */
-  :root {
-    --contrast: oklch(0% 0 0);
-    /* Neutral colors - Gray */
-    --neutral-950: oklch(13% 0.028 261.692);
-    --neutral-900: oklch(21% 0.034 264.665);
-    --neutral-800: oklch(27.8% 0.033 256.848);
-    --neutral-700: oklch(37.3% 0.034 259.733);
-    --neutral-600: oklch(44.6% 0.03 256.802);
-    --neutral-500: oklch(55.1% 0.027 264.364);
-    --neutral-400: oklch(70.7% 0.022 261.325);
-    --neutral-300: oklch(87.2% 0.01 258.338);
-    --neutral-200: oklch(92.8% 0.006 264.531);
-    --neutral-100: oklch(96.7% 0.003 264.542);
-    --neutral-50: oklch(98.5% 0.002 247.839);
-    /* lime-600 */
-    --accent-600: oklch(64.8% 0.2 131.684);
-    /* lime-500 */
-    --accent-500: oklch(76.8% 0.233 130.85);
-    /* lime-400 */
-    --accent-400: oklch(84.1% 0.238 128.85);
-  }
+  --background: #edf5ff;
+  --wall: #f8fbff;
+  --surface: #ffffff;
+  --surface-raised: #f0f6fd;
+  --surface-input: #fbfdff;
+  --border: #d7e5f5;
+  --text: #254261;
+  --text-muted: #617d9c;
+  --primary: #3f83e8;
+  --primary-button: #3274d2;
+  --primary-hover: #2d6fd0;
+  --accent: #66cbd5;
+  --mint: #dff4e9;
+  --pink: #fff0f5;
+  --wood: #f6e6d0;
+  --violet: #9478c3;
+  --success: #278263;
+  --danger: #bd4f70;
+  --focus: #2469c8;
+  --radius: 18px;
+  --radius-small: 11px;
+  --font-ui: "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+
+  /* Preserve the original neutral/accent utility contract in the light UI. */
+  --contrast: #ffffff;
+  --neutral-950: #f8fbff;
+  --neutral-900: #edf5ff;
+  --neutral-800: #ffffff;
+  --neutral-700: #d7e5f5;
+  --neutral-600: #a4b9cf;
+  --neutral-500: #617d9c;
+  --neutral-400: #506e8e;
+  --neutral-300: #3d5c7c;
+  --neutral-200: #254261;
+  --neutral-100: #1b3653;
+  --neutral-50: #122b45;
+  --accent-600: #2d6fd0;
+  --accent-500: #3f83e8;
+  --accent-400: #2d6fd0;
 }

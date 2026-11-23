@@ -180,9 +180,13 @@ test("db can insert and query data", () => {
   // Test that the database is functional
   // Insert a test user
   const stmt = testDb.prepare("INSERT INTO users (email, password) VALUES (?, ?)");
-  const result = stmt.run("test@example.com", "hashedpassword");
-  // Verify that the insert happened (run() returns result object)
-  expect(result).toBeTruthy();
+  try {
+    const result = stmt.run("test@example.com", "hashedpassword");
+    // Verify that the insert happened (run() returns result object)
+    expect(result).toBeTruthy();
+  } finally {
+    stmt.finalize();
+  }
 
   // Query the inserted user
   const user = testDb

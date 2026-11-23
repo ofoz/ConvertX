@@ -1,25 +1,71 @@
-.dockerignore
-.editorconfig
-.env
+# Build context filter.
+# Everything the image needs is: package.json, bun.lock, src/, public/,
+# entrypoint.sh and the tooling configs read by `bun run build:bin`.
+
+# VCS / editors / CI
 .git
 .gitignore
 .github
-.idea
 .vscode
-biome.json
-CHANGELOG.md
-compose.yaml
+.devcontainer
+.editorconfig
+.idea
+
+# Dependencies and build output (installed/rebuilt inside the image)
+node_modules
+dist
+coverage
 coverage*
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+public/generated.css
+
+# Runtime state — never bake user data into an image
 data
+uploads
+output
+mydb.sqlite
+mydb.sqlite-shm
+mydb.sqlite-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Docs and repository metadata
+README.md
+CHANGELOG.md
+LICENSE
+SECURITY.md
+renovate.json
+compose.yaml
+compose*.yaml
 docker-compose*
 Dockerfile*
-eslint.config.js
-helm-charts
 images
-LICENSE
-Makefile
-node_modules
+
+# Tests are mounted into the `test` stage at run time, not copied
+tests
+scripts
+
+# Tooling that only matters for local development
+biome.json
 prettier.config.js
-README.md
-renovate.json
-SECURITY.md
+knip.json
+eslint.config.js
+eslint.config.ts
+tsconfig.eslint.json
+mise.toml
+Makefile
+
+# Noise
+**/*.log
+**/*.trace
+**/*.zip
+**/*.tar.gz
+**/*.tgz
+.DS_Store

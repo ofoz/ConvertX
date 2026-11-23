@@ -1,0 +1,267 @@
+/* Local eye and sleeve rigs share the standing artwork's coordinate system. */
+.sx-auth-actor {
+  --gaze-x: 0px;
+  --gaze-y: 0px;
+  --head-turn: 0deg;
+  position: absolute;
+  bottom: -245px;
+  left: 50%;
+  z-index: 1;
+  width: 384px;
+  height: 690px;
+  max-width: none;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.sx-auth-actor-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 38%;
+  transform: rotate(var(--head-turn));
+  animation: sx-mascot-breathe 4.6s ease-in-out infinite;
+}
+.sx-auth-actor .sx-auth-character,
+.sx-auth-interactive {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: fill;
+  transform: none;
+  transition: opacity 0.24s ease;
+}
+.sx-auth-interactive {
+  opacity: 0;
+}
+.sx-auth-actor[data-mascot-enhanced="true"] .sx-auth-resting {
+  opacity: 0;
+}
+.sx-auth-actor[data-mascot-enhanced="true"] .sx-auth-interactive {
+  opacity: 1;
+}
+.sx-auth-actor:is([data-mascot-mode="covered"], [data-mascot-mode="peeking"])[data-mascot-enhanced="true"] .sx-auth-interactive {
+  clip-path: url(#auth-privacy-portrait);
+}
+.sx-auth-eye-layer,
+.sx-auth-cover-hands {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: 0;
+}
+.sx-auth-eye-layer {
+  z-index: 2;
+}
+.sx-auth-actor[data-mascot-enhanced="true"] .sx-auth-eye-layer {
+  opacity: 1;
+}
+.sx-auth-pupils {
+  transform: translate(var(--gaze-x), var(--gaze-y));
+  transition: transform 0.16s ease-out;
+}
+.sx-auth-blink {
+  opacity: 0;
+  animation: sx-mascot-blink 6.3s linear infinite;
+}
+.sx-auth-cover-hands {
+  z-index: 3;
+}
+.sx-auth-arm {
+  transform-box: view-box;
+  opacity: 0;
+  transition:
+    transform 0.4s cubic-bezier(0.3, 0.1, 0.2, 1.2),
+    opacity 0.18s ease;
+}
+.sx-auth-arm-left {
+  transform-origin: 40% 24%;
+  transform: translateY(60px) rotate(-38deg);
+}
+.sx-auth-arm-right {
+  transform-origin: 58% 23%;
+  transform: translateY(60px) rotate(38deg);
+}
+.sx-auth-sleeve {
+  fill: url(#auth-sleeve-navy);
+  stroke: #232b49;
+  stroke-width: 3;
+}
+.sx-auth-sleeve-fold {
+  stroke: #7380ac;
+  stroke-width: 2.3;
+  opacity: 0.42;
+  stroke-linecap: round;
+}
+.sx-auth-cuff-seam {
+  stroke: #c3b0bf;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.sx-auth-cuff {
+  fill: #f3effb;
+  stroke: #b8a8ca;
+  stroke-width: 2.5;
+}
+.sx-auth-hand-back {
+  fill: url(#auth-hand-back);
+  stroke: #bf929b;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.sx-auth-nail {
+  fill: #fff0eb;
+  stroke: #d7a1a8;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.sx-auth-knuckle {
+  stroke: #d0a3a8;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.sx-auth-actor:is([data-mascot-mode="covered"], [data-mascot-mode="peeking"]) .sx-auth-cover-hands {
+  opacity: 1;
+}
+.sx-auth-actor:is([data-mascot-mode="covered"], [data-mascot-mode="peeking"]) .sx-auth-arm {
+  opacity: 1;
+  transform: translateY(0) rotate(0);
+}
+.sx-auth-actor[data-mascot-mode="peeking"] .sx-auth-arm-right {
+  transform: translate(10px, 18px) rotate(12deg);
+}
+.sx-auth-actor[data-mascot-mode="peeking"] .sx-auth-blink {
+  animation: none;
+  opacity: 0;
+}
+.sx-auth-peek-blush {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.sx-auth-actor[data-mascot-mode="peeking"] .sx-auth-peek-blush {
+  opacity: 0.55;
+}
+.sx-auth-peek-label {
+  position: absolute;
+  z-index: 4;
+  left: 65%;
+  top: 12%;
+  padding: 4px 7px;
+  border: 1px solid #e9d9af;
+  border-radius: 8px 8px 8px 2px;
+  background: #fff9e9;
+  color: #b39967;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(5px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.sx-auth-actor[data-mascot-mode="peeking"] .sx-auth-peek-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sx-auth-mood-star {
+  position: absolute;
+  top: 13%;
+  left: 24%;
+  color: #9bb9dc;
+  font-size: 24px;
+  opacity: 0.7;
+  animation: sx-mascot-star 3.8s ease-in-out infinite;
+}
+.sx-auth-actor[data-typing="true"] .sx-auth-mood-star {
+  color: #e5bba8;
+  animation: sx-mascot-typing 0.4s ease-out;
+}
+.sx-auth-scene:has([data-auth-mascot]) .sx-auth-counter {
+  height: 170px;
+}
+.sx-auth-scene:has([data-auth-mascot]) .sx-auth-counter span {
+  background: #fbfdff;
+}
+.sx-auth-actor[data-motion-paused="true"] *,
+.sx-auth-actor[data-motion-paused="true"] *::before,
+.sx-auth-actor[data-motion-paused="true"] *::after {
+  animation-play-state: paused !important;
+}
+@keyframes sx-mascot-breathe {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--head-turn));
+  }
+  50% {
+    transform: translateY(-3px) rotate(var(--head-turn));
+  }
+}
+@keyframes sx-mascot-blink {
+  0%,
+  90%,
+  95%,
+  100% {
+    opacity: 0;
+  }
+  91%,
+  93%,
+  96%,
+  97% {
+    opacity: 1;
+  }
+  94%,
+  98% {
+    opacity: 0;
+  }
+}
+@keyframes sx-mascot-star {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-10deg);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-6px) rotate(12deg);
+    opacity: 0.8;
+  }
+}
+@keyframes sx-mascot-typing {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-7px) scale(1.13);
+  }
+}
+@media (max-width: 700px) {
+  .sx-auth-actor {
+    left: 73%;
+    width: 217px;
+    height: 390px;
+    bottom: -145px;
+  }
+  .sx-auth-scene:has([data-auth-mascot]) .sx-auth-counter {
+    height: 90px;
+  }
+  .sx-auth-peek-label {
+    font-size: 8px;
+    padding: 3px 5px;
+    left: 64%;
+    top: 10%;
+  }
+  .sx-auth-mood-star {
+    font-size: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sx-auth-actor *,
+  .sx-auth-actor *::before,
+  .sx-auth-actor *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

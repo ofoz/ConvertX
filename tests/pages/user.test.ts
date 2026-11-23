@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 
 import type { User } from "../../src/db/types";
+import { assetUrl } from "../../src/helpers/assets";
 import {
   app,
   createUser,
@@ -43,7 +44,12 @@ describe("GET /register", () => {
     const response = await request("/register");
 
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain('value="Register"');
+    const body = await response.text();
+    expect(body).toContain(">注册</button>");
+    expect(body).toContain("邮箱地址");
+    expect(body).toContain('autocomplete="new-password"');
+    expect(body).toContain('name="confirmPassword"');
+    expect(body).toContain("data-register-form");
   });
 });
 
@@ -52,7 +58,9 @@ describe("POST /register", () => {
     setEnv({ ACCOUNT_REGISTRATION: false });
     const email = uniqueEmail();
 
-    const response = await request("/register", { form: { email, password: "secret" } });
+    const response = await request("/register", {
+      form: { email, password: "secret", confirmPassword: "secret" },
+    });
 
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("/login");
@@ -63,7 +71,9 @@ describe("POST /register", () => {
     setEnv({ ACCOUNT_REGISTRATION: true });
     const email = uniqueEmail();
 
-    const response = await request("/register", { form: { email, password: "secret" } });
+    const response = await request("/register", {
+      form: { email, password: "secret", confirmPassword: "secret" },
+    });
 
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("/");
@@ -84,7 +94,7 @@ describe("POST /register", () => {
     setEnv({ ACCOUNT_REGISTRATION: true, HTTP_ALLOWED: true });
 
     const response = await request("/register", {
-      form: { email: uniqueEmail(), password: "secret" },
+      form: { email: uniqueEmail(), password: "secret", confirmPassword: "secret" },
     });
 
     expect(setCookie(response, "auth")).not.toContain("Secure");
@@ -95,7 +105,11 @@ describe("POST /register", () => {
     const existing = await createUser();
 
     const response = await request("/register", {
-      form: { email: existing.email, password: "another password" },
+      form: {
+        email: existing.email,
+        password: "another password",
+        confirmPassword: "another password",
+      },
     });
 
     expect(response.status).toBe(400);
@@ -113,6 +127,32 @@ describe("POST /register", () => {
 
     expect(response.status).toBe(422);
   });
+  test("rejects mismatched confirmation without creating an account or echoing secrets", async () => {
+    setEnv({ ACCOUNT_REGISTRATION: true });
+    const email = uniqueEmail();
+    const response = await request("/register", {
+      form: { email, password: "initial-secret", confirmPassword: "different-secret" },
+    });
+    expect(response.status).toBe(400);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    const body = await response.text();
+    expect(body).toContain("两次输入的密码不一致");
+    expect(body).toContain(email);
+    expect(body).not.toContain("initial-secret");
+    expect(body).not.toContain("different-secret");
+    expect(findUser(email)).toBeNull();
+    expect(setCookie(response, "auth")).toBeUndefined();
+  });
+
+  test.each([undefined, ""])("requires a nonempty confirmation (%s)", async (confirmation) => {
+    setEnv({ ACCOUNT_REGISTRATION: true });
+    const email = uniqueEmail();
+    const form: Record<string, string> = { email, password: "secret" };
+    if (confirmation !== undefined) form.confirmPassword = confirmation;
+    const response = await request("/register", { form });
+    expect(response.status).toBe(422);
+    expect(findUser(email)).toBeNull();
+  });
 });
 
 const expectErrorPage = async (response: Response, message: string) => {
@@ -127,7 +167,7 @@ describe("GET /login", () => {
 
     const body = await (await request("/login")).text();
 
-    expect(body).toContain('value="Login"');
+    expect(body).toContain(">登录</button>");
     expect(body).not.toContain('href="/register"');
   });
 
@@ -180,7 +220,7 @@ describe("POST /login", () => {
     const response = await request("/login", { form: { email: user.email, password } });
 
     expect(response.status).toBe(403);
-    await expectErrorPage(response, "Invalid credentials.");
+    await expectErrorPage(response, "邮箱或密码不正确，请检查后重试。");
     expect(setCookie(response, "auth")).toBeUndefined();
   });
 
@@ -190,7 +230,7 @@ describe("POST /login", () => {
     });
 
     expect(response.status).toBe(403);
-    await expectErrorPage(response, "Invalid credentials.");
+    await expectErrorPage(response, "邮箱或密码不正确，请检查后重试。");
   });
 
   test("keeps the entered email in the form after a failed login", async () => {
@@ -219,7 +259,7 @@ describe.each(["GET", "POST"])("%s /logoff", (method) => {
     const response = await request("/logoff", { method, cookies: { auth: user.token } });
 
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("/login");
+    expect(response.headers.get("location")).toBe("/");
     expect(setCookie(response, "auth")).toContain("Max-Age=0");
   });
 
@@ -227,7 +267,7 @@ describe.each(["GET", "POST"])("%s /logoff", (method) => {
     const response = await request("/logoff", { method });
 
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("/login");
+    expect(response.headers.get("location")).toBe("/");
     expect(setCookie(response, "auth")).toBeUndefined();
   });
 });
@@ -276,7 +316,7 @@ describe("POST /account", () => {
     });
 
     expect(response.status).toBe(403);
-    await expectErrorPage(response, "Invalid credentials.");
+    await expectErrorPage(response, "邮箱或密码不正确，请检查后重试。");
     expect(findUserById(user.id)?.email).toBe(user.email);
   });
 
@@ -313,7 +353,7 @@ describe("POST /account", () => {
     });
 
     expect(response.status).toBe(409);
-    await expectErrorPage(response, "Email already in use.");
+    await expectErrorPage(response, "此邮箱已注册，请更换邮箱后重试。");
     expect(findUserById(user.id)?.email).toBe(user.email);
   });
 
@@ -363,5 +403,148 @@ describe("POST /account", () => {
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("/login");
     expect(setCookie(response, "auth")).toContain("Max-Age=0");
+  });
+});
+
+describe("workshop account illustrations", () => {
+  test.each([
+    ["/login", "whale-cheerful.webp"],
+    ["/register", "whale-starry.webp"],
+  ])("renders the shared character layout on %s", async (route, image) => {
+    setEnv({ ACCOUNT_REGISTRATION: true, WEBROOT: "/workshop" });
+    const response = await request(route);
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("sx-auth-layout");
+    expect(body).toContain(assetUrl("/workshop", `characters/${image}`));
+    expect(body).toContain("蓝发鲸尾的大肥鱼");
+    expect(body).toContain("data-auth-mascot");
+    expect(body).toContain("sx-auth-eye-layer");
+    expect(body).toContain("sx-auth-cover-hands");
+    expect(body).toContain(assetUrl("/workshop", "auth-character.js"));
+    expect(body).toContain('autocomplete="email"');
+    expect(body).toContain('type="password"');
+  });
+
+  test("loads mascot interaction for both current and new password fields on account settings", async () => {
+    const user = await createUser();
+    const response = await request("/account", { cookies: { auth: user.token } });
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain(assetUrl("", "auth-character.js"));
+    expect(body).toContain("data-auth-mascot");
+    expect(body).toContain('name="newPassword"');
+    expect(body).toContain('name="password"');
+    expect(body).not.toContain(user.password);
+  });
+
+  test("escapes a configured brand consistently in account page titles", async () => {
+    setEnv({ BRANDING: "大肥鱼 <测试>" });
+    const response = await request("/login");
+    const body = await response.text();
+    expect(body).toContain("<title>大肥鱼 &lt;测试&gt; | 登录</title>");
+    expect(body).toContain(">大肥鱼 &lt;测试&gt;</span>");
+  });
+});
+
+describe("workshop authentication continuation", () => {
+  const target = "/?to=docx&converter=calibre";
+  test("preserves the selection in both forms and their switch links", async () => {
+    setEnv({ ACCOUNT_REGISTRATION: true });
+    for (const route of ["login", "register"]) {
+      const response = await request(`/${route}?next=${encodeURIComponent(target)}`);
+      expect(response.status).toBe(200);
+      const body = await response.text();
+      expect(body).toContain('name="returnTo"');
+      expect(body).toContain("to=docx");
+      expect(body).toContain(
+        `/${route === "login" ? "register" : "login"}?next=${encodeURIComponent(target)}`,
+      );
+    }
+  });
+  test("returns to the selected format after successful login", async () => {
+    const user = await createUser();
+    const response = await request("/login", {
+      form: { email: user.email, password: user.password, returnTo: target },
+    });
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(target);
+    expect(setCookie(response, "auth")).toBeDefined();
+    const alreadySignedIn = await request(`/login?next=${encodeURIComponent(target)}`, {
+      cookies: { auth: user.token },
+    });
+    expect(alreadySignedIn.headers.get("location")).toBe(target);
+  });
+  test("preserves the target on incorrect login and password confirmation errors", async () => {
+    setEnv({ ACCOUNT_REGISTRATION: true });
+    const email = uniqueEmail();
+    for (const route of ["login", "register"]) {
+      const form = {
+        email,
+        password: "private-secret",
+        confirmPassword: "different-secret",
+        returnTo: target,
+      };
+      const response = await request(`/${route}`, { form });
+      expect(response.status).toBe(route === "login" ? 403 : 400);
+      const body = await response.text();
+      expect(body).toContain('name="returnTo"');
+      expect(body).toContain("to=docx");
+      expect(body).toContain(email);
+      expect(body).not.toContain("private-secret");
+      expect(body).not.toContain("different-secret");
+    }
+    expect(findUser(email)).toBeNull();
+  });
+  test("keeps a failed duplicate-email registration on the continuation page", async () => {
+    setEnv({ ACCOUNT_REGISTRATION: true });
+    const existing = await createUser();
+    const response = await request("/register", {
+      form: {
+        email: existing.email,
+        password: "secret",
+        confirmPassword: "secret",
+        returnTo: target,
+      },
+    });
+    expect(response.status).toBe(400);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    const body = await response.text();
+    expect(body).toContain("此邮箱已注册");
+    expect(body).toContain('name="returnTo"');
+    expect(body).toContain("to=docx");
+  });
+  test("returns to the selected format after successful registration", async () => {
+    setEnv({ ACCOUNT_REGISTRATION: true });
+    const email = uniqueEmail();
+    const response = await request("/register", {
+      form: { email, password: "secret", confirmPassword: "secret", returnTo: target },
+    });
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(target);
+    expect(findUser(email)).not.toBeNull();
+  });
+  test.each([
+    "https://example.com/",
+    "//example.com/",
+    "/?next=https://example.com",
+    "/?to=docx%0aevil",
+  ])("never redirects a signed-in user outside the workshop (%s)", async (returnTo) => {
+    const user = await createUser();
+    const response = await request("/login", {
+      form: { email: user.email, password: user.password, returnTo },
+    });
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("/");
+    const page = await request(`/login?next=${encodeURIComponent(returnTo)}`);
+    expect(await page.text()).not.toContain('name="returnTo"');
+  });
+  test("preserves a WEBROOT-prefixed destination", async () => {
+    setEnv({ WEBROOT: "/workshop" });
+    const user = await createUser();
+    const response = await request("/login", {
+      form: { email: user.email, password: user.password, returnTo: "/workshop/?to=pdf" },
+    });
+    expect(response.headers.get("location")).toBe("/workshop/?to=pdf");
   });
 });

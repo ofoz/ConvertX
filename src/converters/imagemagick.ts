@@ -1,5 +1,5 @@
-import { execFile as execFileOriginal } from "node:child_process";
-
+import { boundedExecFile as execFileOriginal } from "../helpers/boundedExec";
+import { magickCacheArgs } from "../helpers/conversionBudget";
 import { ExecFileFn } from "./types";
 
 // declare possible conversions
@@ -481,7 +481,7 @@ export function convert(
   return new Promise((resolve, reject) => {
     execFile(
       "magick",
-      [...inputArgs, filePath, ...outputArgs, targetPath],
+      [...magickCacheArgs(), ...inputArgs, filePath, ...outputArgs, targetPath],
       (error, stdout, stderr) => {
         if (error) {
           reject(`error: ${error}`);

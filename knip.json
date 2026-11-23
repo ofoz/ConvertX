@@ -20,7 +20,8 @@
     "soffice",
     "perl",
     "markitdown",
-    "fmt"
+    "pdf2docx",
+    "pipx"
   ],
   "tailwind": {
     "entry": ["src/main.css"]

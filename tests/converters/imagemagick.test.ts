@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 
 import { convert } from "../../src/converters/imagemagick";
+import { resourceLimits } from "../../src/helpers/resourceLimits";
 import { runCommonTests } from "./helpers/commonTests";
 import { createMockExecFile } from "./helpers/converters";
 
@@ -81,7 +82,21 @@ test.each([
   expect(calls).toEqual([
     {
       cmd: "magick",
-      args: [...inputArgs, `in/image.${fileType}`, ...outputArgs, `out/image.${convertTo}`],
+      args: [
+        "-limit",
+        "memory",
+        `${resourceLimits.magickMemoryBytes / 1048576}MiB`,
+        "-limit",
+        "map",
+        `${resourceLimits.magickMemoryBytes / 1048576}MiB`,
+        "-limit",
+        "disk",
+        `${resourceLimits.magickDiskBytes / 1048576}MiB`,
+        ...inputArgs,
+        `in/image.${fileType}`,
+        ...outputArgs,
+        `out/image.${convertTo}`,
+      ],
     },
   ]);
 });

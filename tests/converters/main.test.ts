@@ -1,12 +1,11 @@
 import { afterAll, afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { Cookie } from "elysia";
 
-import { properties as libreofficeProperties } from "../../src/converters/libreoffice";
 import { captureConsole } from "./helpers/converters";
 
 if (!process.env.CONVERTX_TEST_ROOT) {
@@ -17,8 +16,16 @@ if (!process.env.CONVERTX_TEST_ROOT) {
 
 // dynamic imports ensure that the guard above runs before the db module is loaded
 const { default: db } = await import("../../src/db/db");
-const { chunks, getAllInputs, getAllTargets, getPossibleTargets, handleConvert, mainConverter } =
-  await import("../../src/converters/main");
+const {
+  chunks,
+  getAllInputs,
+  getAllTargets,
+  getPossibleTargets,
+  getTargetsForConverter,
+  handleConvert,
+  isMissingExecutable,
+  mainConverter,
+} = await import("../../src/converters/main");
 
 const testRoot = mkdtempSync(join(tmpdir(), "convertx-main-test-"));
 
@@ -80,81 +87,94 @@ describe("converter registry", () => {
     expect(getPossibleTargets("htm")).toEqual(getPossibleTargets("html"));
   });
 
-  test("getPossibleTargets returns an empty object for unknown input types", () => {
+  test("getPossibleTargets returns an empty object for unknown or rare input types", () => {
     expect(getPossibleTargets("xyz123")).toEqual({});
+    expect(getPossibleTargets("exr")).toEqual({});
+    expect(getPossibleTargets("jxl")).toEqual({});
+    expect(getPossibleTargets("unknown")).toEqual({});
   });
 
-  test("getAllTargets has an entry for every registered converter", () => {
+  test("getAllTargets only exposes engines with curated common-format conversions", () => {
     expect(Object.keys(getAllTargets()).sort()).toEqual([
       "assimp",
       "calibre",
       "dasel",
-      "djvu",
       "dvisvgm",
       "ffmpeg",
       "graphicsmagick",
       "imagemagick",
       "inkscape",
       "libheif",
-      "libjxl",
       "libreoffice",
       "markitDown",
       "msgconvert",
       "pandoc",
-      "pdftops",
+      "pdf2docx",
       "potrace",
       "resvg",
       "vcf",
       "vips",
       "vtracer",
-      "xelatex",
     ]);
   });
 
-  test("getAllTargets merges the targets of all categories of a converter", () => {
+  test("getAllTargets and getAllInputs are derived from the curated graph", () => {
     const allTargets = getAllTargets();
-
     expect(allTargets.vcf).toEqual(["csv"]);
-    expect(allTargets.libjxl).toEqual([
-      "apng",
-      "exr",
-      "jpeg",
-      "pam",
-      "pfm",
-      "pgm",
-      "pgx",
-      "png",
-      "ppm",
-      "jxl",
-    ]);
-  });
-
-  test("getAllInputs merges the inputs of all categories of a converter", () => {
+    expect(allTargets.libjxl).toBeUndefined();
     expect(getAllInputs("vcf")).toEqual(["vcf"]);
-    expect(getAllInputs("libjxl")).toEqual([
-      "jxl",
-      "apng",
-      "exr",
-      "gif",
-      "jpeg",
-      "pam",
-      "pfm",
-      "pgm",
-      "pgx",
-      "png",
-      "ppm",
-    ]);
+    expect(getAllInputs("libjxl")).toEqual([]);
+    expect(getTargetsForConverter("libreoffice")).toContain("docx");
   });
 
-  test("getAllInputs returns an empty list for unknown converters", () => {
-    expect(getAllInputs("doesnotexist")).toEqual([]);
+  test("registers a table-preserving engine for PDF to Word", () => {
+    // LibreOffice's PDF import flattens a page into text frames and drops table
+    // borders, and Calibre reflows the text, so pdf2docx has to win auto-discovery.
+    expect(getPossibleTargets("pdf").pdf2docx).toEqual(["docx"]);
+    expect(getAllInputs("pdf2docx")).toEqual(["pdf"]);
+    const order = Object.keys(getPossibleTargets("pdf"));
+    expect(order.indexOf("pdf2docx")).toBeGreaterThanOrEqual(0);
+    expect(order.indexOf("pdf2docx")).toBeLessThan(order.indexOf("calibre"));
+    expect(order.indexOf("pdf2docx")).toBeLessThan(order.indexOf("libreoffice"));
   });
 
-  test("listing all targets and inputs does not leak formats across categories", () => {
+  test("keeps common formats, aliases, one-way paths, and hides rare or internal formats", () => {
+    expect(getPossibleTargets("JPG")).toEqual(getPossibleTargets("jpeg"));
+    expect(getPossibleTargets("vcf").vcf).toEqual(["csv"]);
+    expect(getPossibleTargets("msg").msgconvert).toEqual(["eml"]);
+    expect(getPossibleTargets("png").ffmpeg).toBeUndefined();
+    expect(getPossibleTargets("mp3").ffmpeg).not.toContain("mp4");
+    expect(getPossibleTargets("mp4").ffmpeg).toContain("mp3");
+    expect(getPossibleTargets("exr")).toEqual({});
+    expect(getPossibleTargets("jxl")).toEqual({});
+    expect(getPossibleTargets("emf")).toEqual({});
+    expect(getTargetsForConverter("ffmpeg")).not.toContain("wav-3cx");
+    expect(getTargetsForConverter("ffmpeg")).not.toContain("h264.mp4");
+    expect(getTargetsForConverter("assimp")).not.toContain("glb2");
+    expect(getTargetsForConverter("assimp")).not.toContain("stlb");
+  });
+
+  test("does not leak outputs between LibreOffice categories", () => {
     expect(getPossibleTargets("docx").libreoffice).not.toContain("xlsx");
-    expect(getPossibleTargets("jxl").libjxl).not.toContain("jxl");
-    expect(libreofficeProperties.from.text).not.toContain("xlsx");
-    expect(libreofficeProperties.to.text).not.toContain("xlsm");
+    expect(getPossibleTargets("xlsx").libreoffice).not.toContain("docx");
+  });
+});
+
+describe("missing converter binaries", () => {
+  test("recognises the errors that mean an engine is not installed", () => {
+    expect(isMissingExecutable(Object.assign(new Error("spawn failed"), { code: "ENOENT" }))).toBe(
+      true,
+    );
+    expect(isMissingExecutable(new Error('Executable not found in $PATH: "pdf2docx"'))).toBe(true);
+    expect(
+      isMissingExecutable(new Error("'soffice' is not recognized as an internal command")),
+    ).toBe(true);
+  });
+
+  test("treats real conversion errors as failures instead of missing engines", () => {
+    expect(isMissingExecutable(new Error("Conversion failed: damaged input"))).toBe(false);
+    expect(isMissingExecutable(new Error("Command failed with code 1"))).toBe(false);
+    expect(isMissingExecutable(undefined)).toBe(false);
   });
 });
 
@@ -230,8 +250,8 @@ describe("mainConverter", () => {
   });
 
   test.each([
-    ["msgconvert", "mail.eml", "eml", "msg"],
-    ["calibre", "news.recipe", "recipe", "epub"],
+    ["msgconvert", "mail.msg", "msg", "eml"],
+    ["calibre", "news.epub", "epub", "azw3"],
   ])(
     "returns 'Failed, check logs' when %s refuses the conversion",
     async (converterName, fileName, fileType, convertTo) => {
@@ -258,8 +278,29 @@ describe("mainConverter", () => {
     expect(output.logs.join("\n")).toContain("successfully using vcf");
   });
 
+  test("rejects non-curated paths and converter-target cross-product mismatches", async () => {
+    expect(await mainConverter("input.exr", "exr", "png", "out.png", {}, "vips")).toBe(
+      "File type not supported",
+    );
+    expect(await mainConverter("input.png", "png", "mp4", "out.mp4", {}, "ffmpeg")).toBe(
+      "File type not supported",
+    );
+    expect(await mainConverter("input.mp3", "mp3", "mp4", "out.mp4", {}, "ffmpeg")).toBe(
+      "File type not supported",
+    );
+  });
+
+  test("rejects unknown extensions rather than treating them as default audio", async () => {
+    expect(await mainConverter("input.xyz", "xyz", "mp3", "out.mp3", {}, "ffmpeg")).toBe(
+      "File type not supported",
+    );
+    expect(await mainConverter("input.bin", "unknown", "mp3", "out.mp3", {}, "ffmpeg")).toBe(
+      "File type not supported",
+    );
+  });
+
   test("auto-discovery prefers the first registered converter", async () => {
-    await mainConverter(`${uploadsDir}missing.emf`, "emf", "png", `${outputDir}missing.png`);
+    await mainConverter(`${uploadsDir}missing.svg`, "svg", "png", `${outputDir}missing.png`);
 
     expect(output.errors.join("\n")).toContain("using inkscape");
   });
@@ -317,15 +358,19 @@ describe("handleConvert", () => {
     ]);
   });
 
-  test("handles files without extension by appending output extension", async () => {
+  test("does not convert files without a recognized extension", async () => {
     await writeFile(`${uploadsDir}noextfile`, vcard("No Ext"));
 
     await handleConvert(["noextfile"], uploadsDir, outputDir, "csv", "vcf", jobCookie("noext"));
 
     expect(rowsFor("noext")).toEqual([
-      { file_name: "noextfile", output_file_name: "noextfile.csv", status: "Done" },
+      {
+        file_name: "noextfile",
+        output_file_name: "noextfile.csv",
+        status: "File type not supported",
+      },
     ]);
-    expect(await readFile(`${outputDir}noextfile.csv`, "utf-8")).toContain("No Ext");
+    expect(await Bun.file(`${outputDir}noextfile.csv`).exists()).toBe(false);
   });
 
   test("resolves and records the status when no converter supports the conversion", async () => {
@@ -344,14 +389,13 @@ describe("handleConvert", () => {
     ]);
   });
 
-  test("rejects when the output directory is missing, so the caller can log it", async () => {
+  test("records a failure when the output directory disappears", async () => {
     await writeFile(`${uploadsDir}contact.vcf`, vcard("Lost"));
     const missingDir = `${join(testRoot, "does-not-exist")}/`;
-
-    await expect(
-      handleConvert(["contact.vcf"], uploadsDir, missingDir, "csv", "vcf", jobCookie("lost")),
-    ).rejects.toThrow(/ENOENT/);
-    expect(rowsFor("lost")).toEqual([]);
+    await handleConvert(["contact.vcf"], uploadsDir, missingDir, "csv", "vcf", jobCookie("lost"));
+    expect(rowsFor("lost")).toEqual([
+      { file_name: "contact.vcf", output_file_name: "contact.csv", status: "Failed, check logs" },
+    ]);
   });
 
   test.each([
@@ -368,8 +412,8 @@ describe("handleConvert", () => {
     ]);
   });
 
-  test("records numbered sibling outputs (e.g. one file per page) in numeric order", async () => {
-    // converters such as ImageMagick write doc-1.csv, doc-2.csv, ... instead of doc.csv
+  test("does not adopt pre-existing numbered files from the shared output directory", async () => {
+    // Only files created in this input's private work directory belong to its result.
     for (const fileName of [
       "doc-1.csv",
       "doc-2.csv",
@@ -387,11 +431,44 @@ describe("handleConvert", () => {
 
     await handleConvert(["doc.vcf"], uploadsDir, outputDir, "csv", "vcf", jobCookie("pages"));
 
-    expect(rowsFor("pages").map((row) => row.output_file_name)).toEqual([
-      "doc-1.csv",
-      "doc-2.csv",
-      "doc-10.csv",
-      "doc.csv",
-    ]);
+    expect(rowsFor("pages").map((row) => row.output_file_name)).toEqual(["doc.csv"]);
+  });
+
+  test("retains only outputs within the cumulative budget and cleans private work directories", async () => {
+    const name = "X".repeat(600 * 1024);
+    await writeFile(`${uploadsDir}first.vcf`, vcard(name));
+    await writeFile(`${uploadsDir}second.vcf`, vcard(name));
+    await handleConvert(
+      ["first.vcf", "second.vcf"],
+      uploadsDir,
+      outputDir,
+      "csv",
+      "vcf",
+      jobCookie("quota"),
+    );
+    const rows = rowsFor("quota");
+    expect(rows).toHaveLength(2);
+    expect(rows.filter((row) => row.status === "Done")).toHaveLength(1);
+    expect(rows.filter((row) => row.status === "Failed, check logs")).toHaveLength(1);
+    const retained = await readdir(outputDir);
+    expect(retained).toEqual([rows.find((row) => row.status === "Done")!.output_file_name]);
+    expect(
+      (await readdir(join(outputDir, ".."))).filter((entry) => entry.startsWith(".convertx-work-")),
+    ).toEqual([]);
+  });
+
+  test("preserves existing output on a filename collision and records the new input as failed", async () => {
+    await writeFile(`${uploadsDir}contact.vcf`, vcard("Replacement"));
+    await writeFile(`${outputDir}contact.csv`, "original result");
+    await handleConvert(
+      ["contact.vcf"],
+      uploadsDir,
+      outputDir,
+      "csv",
+      "vcf",
+      jobCookie("collision"),
+    );
+    expect(rowsFor("collision")[0]?.status).toBe("Failed, check logs");
+    expect(await readFile(`${outputDir}contact.csv`, "utf8")).toBe("original result");
   });
 });

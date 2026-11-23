@@ -18,6 +18,7 @@ const userPage = await import("../../../src/pages/user");
 const { root } = await import("../../../src/pages/root");
 const { upload } = await import("../../../src/pages/upload");
 const { history } = await import("../../../src/pages/history");
+const { jobApi } = await import("../../../src/pages/jobApi");
 const { convert } = await import("../../../src/pages/convert");
 const { download } = await import("../../../src/pages/download");
 const { deleteJob } = await import("../../../src/pages/deleteJob");
@@ -26,6 +27,7 @@ const { deleteFile } = await import("../../../src/pages/deleteFile");
 const { listConverters } = await import("../../../src/pages/listConverters");
 const { chooseConverter } = await import("../../../src/pages/chooseConverter");
 const { healthcheck } = await import("../../../src/pages/healthcheck");
+const { credits } = await import("../../../src/pages/credits");
 
 export { db, uploadsDir };
 
@@ -35,6 +37,7 @@ export const app = new Elysia({ prefix: realEnvModule.WEBROOT })
   .use(userPage.user)
   .use(root)
   .use(upload)
+  .use(jobApi)
   .use(history)
   .use(convert)
   .use(download)
@@ -43,7 +46,8 @@ export const app = new Elysia({ prefix: realEnvModule.WEBROOT })
   .use(deleteFile)
   .use(listConverters)
   .use(chooseConverter)
-  .use(healthcheck);
+  .use(healthcheck)
+  .use(credits);
 
 // --- environment flags ---------------------------------------------------------
 // src/helpers/env.ts reads process.env once at import, so flags are switched by
@@ -183,8 +187,18 @@ async function snapshot(response: Promise<Response>): Promise<Snapshot> {
   };
 }
 
-export const FIRST_ACCOUNT = { email: "first@example.com", password: crypto.randomUUID() };
-export const SECOND_ACCOUNT = { email: "second@example.com", password: crypto.randomUUID() };
+const firstPassword = crypto.randomUUID();
+export const FIRST_ACCOUNT = {
+  email: "first@example.com",
+  password: firstPassword,
+  confirmPassword: firstPassword,
+};
+const secondPassword = crypto.randomUUID();
+export const SECOND_ACCOUNT = {
+  email: "second@example.com",
+  password: secondPassword,
+  confirmPassword: secondPassword,
+};
 
 async function walkThroughFirstRun() {
   // the first account must not depend on open registration
@@ -194,6 +208,14 @@ async function walkThroughFirstRun() {
       setup: await snapshot(request("/setup")),
       login: await snapshot(request("/login")),
       home: await snapshot(request("/")),
+      setupResume: await snapshot(request("/setup?next=%2F%3Fto%3Ddocx")),
+      loginResume: await snapshot(request("/login?next=%2F%3Fto%3Ddocx")),
+      mismatch: await snapshot(
+        request("/register", {
+          form: { ...FIRST_ACCOUNT, confirmPassword: "different-confirmation" },
+        }),
+      ),
+      setupAfterMismatch: await snapshot(request("/setup")),
       register: await snapshot(request("/register", { form: FIRST_ACCOUNT })),
       setupAfterwards: await snapshot(request("/setup")),
       registerAfterwards: await snapshot(request("/register", { form: SECOND_ACCOUNT })),

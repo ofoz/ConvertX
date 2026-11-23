@@ -1,6 +1,6 @@
 import fs from "fs";
-import { execFile as execFileOriginal } from "node:child_process";
 
+import { boundedExecFile as execFileOriginal } from "../helpers/boundedExec";
 import { ExecFileFn } from "./types";
 
 export const properties = {

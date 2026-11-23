@@ -1,26 +1,92 @@
-# This compose file is for development and testing purposes only. See README for production deployment instructions.
+# ConvertX 部署示例。
+#
+# 首次启动：docker compose up -d --build
+# 打开 http://localhost:3000 创建第一个账号（首个账号不受 ACCOUNT_REGISTRATION 限制）。
+#
+# 生产环境建议：
+#   1. 用反向代理终止 TLS，并把 client_max_body_size 调到不低于 MAX_REQUEST_SIZE_MB
+#   2. 固定 JWT_SECRET，否则每次重建都会让所有会话失效
+#   3. 不要在未设置密码/未限制访问的情况下把 ACCOUNT_REGISTRATION 开成 true
 
 services:
   convertx:
-    pull_policy: build
     build:
       context: .
-      # dockerfile: Debian.Dockerfile
-    volumes:
-      - ./data:/app/data
-    environment: # Defaults are listed below. All are optional.
-      - PUID=1000 # user ID for file permissions, defaults to 0
-      - PGID=1000 # group ID for file permissions, defaults to 0
-      - UMASK=002 # file creation mask, defaults to 002 when PUID is set
-      - ACCOUNT_REGISTRATION=true # true or false, doesn't matter for the first account (e.g. keep this to false if you only want one account)
-      - JWT_SECRET=aLongAndSecretStringUsedToSignTheJSONWebToken1234 # will use randomUUID() by default
-      - HTTP_ALLOWED=false # setting this to true is unsafe, only set this to true locally
-      - ALLOW_UNAUTHENTICATED=false # allows anyone to use the service without logging in, only set this to true locally
-      - AUTO_DELETE_EVERY_N_HOURS=1 # checks every n hours for files older then n hours and deletes them, set to 0 to disable
-      # - FFMPEG_ARGS=-hwaccel vulkan # additional arguments to pass to ffmpeg
-      # - WEBROOT=/convertx # the root path of the web interface, leave empty to disable
-      # - HIDE_HISTORY=true # hides the history tab in the web interface, defaults to false
-      - TZ=Europe/Stockholm # set your timezone, defaults to UTC
-      # - UNAUTHENTICATED_USER_SHARING=true # for use with ALLOW_UNAUTHENTICATED=true to share history with all unauthenticated users / devices
+      target: release
+    image: convertx:local
+    container_name: convertx
+    restart: unless-stopped
+
     ports:
-      - 3000:3000
+      - "3000:3000"
+
+    volumes:
+      # 必须持久化：数据库、上传文件与转换产物都在这里
+      - ./data:/app/data
+
+    environment:
+      # --- 身份与访问 ---
+      - JWT_SECRET=${JWT_SECRET:-change-me-to-a-long-random-string}
+      # 局域网用 http://<ip>:3000 访问时必须为 true，否则登录 Cookie 会被浏览器丢弃
+      - HTTP_ALLOWED=${HTTP_ALLOWED:-false}
+      # 允许未登录直接使用；只在可信内网开启
+      - ALLOW_UNAUTHENTICATED=false
+      # 允许自助注册；只在可信内网开启
+      - ACCOUNT_REGISTRATION=false
+      # 未登录用户之间共享历史记录（配合 ALLOW_UNAUTHENTICATED）
+      - UNAUTHENTICATED_USER_SHARING=false
+
+      # --- 文件与进程属主 ---
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+
+      # --- 站点 ---
+      - TZ=Asia/Shanghai
+      - LANGUAGE=zh-CN
+      # 自定义显示名，不设置则为「大肥鱼格式工坊」
+      # - BRANDING=我的格式工坊
+      # 部署在子路径时设置，例如 /convert
+      # - WEBROOT=/convert
+      # 隐藏历史记录页
+      # - HIDE_HISTORY=true
+
+      # --- 清理策略 ---
+      # 按作业创建时间清理文件，0 表示不清理
+      - AUTO_DELETE_EVERY_N_HOURS=24
+
+      # --- 资源上限（启动时读取一次，改完需重建容器）---
+      - GLOBAL_CONVERT_CONCURRENCY=2
+      - MAX_QUEUED_FILES=64
+      - MAX_FILES_PER_JOB=20
+      - MAX_FILE_SIZE_MB=256
+      # 单作业累计上传上限
+      - MAX_JOB_UPLOAD_SIZE_MB=1024
+      # 单作业累计产物上限（含附属文件）
+      - MAX_JOB_OUTPUT_SIZE_MB=1024
+      - MAX_PDF_PAGES=200
+      - MAX_IMAGE_PIXELS=40000000
+      - CONVERT_TIMEOUT_SECONDS=600
+      - MAX_ARCHIVE_SIZE_MB=1024
+
+      # --- 引擎调优（可选）---
+      # - MAX_CONVERT_PROCESS=0        # 单作业并发，0 表示沿用全局上限
+      # - FFMPEG_THREADS=2
+      # - FFMPEG_ARGS=-hwaccel vaapi   # 例如启用硬件解码
+      # - FFMPEG_OUTPUT_ARGS=-preset veryfast
+      # - MAGICK_MEMORY_MB=256
+      # - MAGICK_DISK_MB=1024
+
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+
+    # 转换是 CPU/内存密集型，按机器规模调整
+    deploy:
+      resources:
+        limits:
+          # 必须大于 MAGICK_MEMORY_MB + 一次 ffmpeg 的开销
+          memory: 4g

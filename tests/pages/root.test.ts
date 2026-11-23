@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, spyOn, test } from "bun:test";
 
+import { Header } from "../../src/components/header";
 import {
   app,
   createUser,
@@ -26,32 +27,98 @@ async function userIdOf(response: Response) {
   return payload ? payload.id : undefined;
 }
 
+function jobCount() {
+  return (db.query("SELECT COUNT(*) AS count FROM jobs").get() as { count: number }).count;
+}
+
+function headerOf(body: string) {
+  return body.slice(body.indexOf("<header"), body.indexOf("</header>") + "</header>".length);
+}
+
+async function expectGuestWorkspace(response: Response, before: number) {
+  expect(response.status).toBe(200);
+  expect(response.headers.get("location")).toBeNull();
+  expect(setCookie(response, "jobId")).toBeUndefined();
+  expect(jobCount()).toBe(before);
+  const body = await response.text();
+  expect(body).toContain("data-service-workspace");
+  expect(body).toContain('data-requires-auth="true"');
+  expect(body).not.toMatch(/data-job-id="\d+"/);
+  expect(body).toContain('data-value="png,inkscape"');
+  expect(body).toContain('data-format-category="documents"');
+  const header = headerOf(body);
+  expect(header).toContain('href="/converters"');
+  expect(header).not.toContain('href="/history"');
+  expect(header).not.toContain('href="/account"');
+  expect(header).not.toContain('href="/logoff"');
+  return body;
+}
+
 describe("GET / with accounts", () => {
-  test("redirects to the login page without a session", async () => {
-    const response = await request("/");
-
-    expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("/login");
+  test("renders the public workspace without creating a session or job", async () => {
+    const before = jobCount();
+    const signing = spyOn(app.decorator.jwt, "sign");
+    try {
+      const response = await request("/");
+      await expectGuestWorkspace(response, before);
+      expect(setCookie(response, "auth")).toBeUndefined();
+      expect(response.headers.getSetCookie()).toEqual([]);
+      expect(signing).not.toHaveBeenCalled();
+    } finally {
+      signing.mockRestore();
+    }
   });
 
-  test("redirects to the login page for an invalid session", async () => {
-    const response = await request("/", { cookies: { auth: "not-a-jwt" } });
-
-    expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("/login");
+  test("clears an invalid session and renders the public workspace", async () => {
+    const before = jobCount();
+    const response = await request("/", { cookies: { auth: "not-a-jwt", jobId: "999999" } });
+    await expectGuestWorkspace(response, before);
+    expect(setCookie(response, "auth")).toContain("Max-Age=0");
   });
 
-  test("clears the session of an account that no longer exists", async () => {
+  test("clears a deleted account session without starting a job", async () => {
     const user = await createUser();
     db.query("DELETE FROM users WHERE id = ?").run(user.id);
-
+    const before = jobCount();
     const response = await request("/", { cookies: { auth: user.token } });
-
-    expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe("/login");
+    await expectGuestWorkspace(response, before);
     expect(setCookie(response, "auth")).toContain("Max-Age=0");
-    // no job is started for the deleted account
     expect(jobsOf(user.id)).toEqual([]);
+  });
+
+  test("honours WEBROOT and closed/open registration links for guests", async () => {
+    const before = jobCount();
+    setEnv({ WEBROOT: "/workshop", ACCOUNT_REGISTRATION: false });
+    const closed = await request("/");
+    const body = await closed.text();
+    expect(closed.status).toBe(200);
+    expect(closed.headers.getSetCookie()).toEqual([]);
+    expect(body).toContain('data-login-url="/workshop/login"');
+    expect(body).toContain('data-register-url=""');
+    expect(headerOf(body)).toContain('href="/workshop/converters"');
+    setEnv({ WEBROOT: "/workshop", ACCOUNT_REGISTRATION: true });
+    const open = await request("/");
+    expect(await open.text()).toContain('data-register-url="/workshop/register"');
+    expect(open.headers.getSetCookie()).toEqual([]);
+    expect(jobCount()).toBe(before);
+  });
+
+  test("keeps public navigation opt-in for other headers", () => {
+    expect(String(Header({}))).not.toContain('href="/converters"');
+    const publicHeader = String(Header({ publicNavigation: true }));
+    expect(publicHeader).toContain('href="/converters"');
+    expect(publicHeader).not.toContain('href="/history"');
+    expect(publicHeader).not.toContain('href="/account"');
+  });
+
+  test("uses the supplied workshop brand image for the default brand and text for custom branding", () => {
+    const defaultHeader = String(Header({}));
+    expect(defaultHeader).toContain('src="/brand-workshop.png?v=workshop-11"');
+    expect(defaultHeader).toContain('alt="大肥鱼格式工坊"');
+
+    const customHeader = String(Header({ branding: "我的转换站" }));
+    expect(customHeader).toContain(">我的转换站</span>");
+    expect(customHeader).not.toContain("brand-workshop.png");
   });
 
   test("starts a new job and remembers it in the jobId cookie", async () => {
@@ -60,6 +127,7 @@ describe("GET / with accounts", () => {
     const response = await request("/", { cookies: { auth: user.token } });
 
     expect(response.status).toBe(200);
+    expect(await response.text()).toContain('data-requires-auth="false"');
     const jobs = jobsOf(user.id);
     expect(jobs).toHaveLength(1);
     expect(jobs[0]?.status).toBe("not started");

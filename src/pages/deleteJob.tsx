@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs";
+import { rm } from "node:fs/promises";
 
 import { Elysia, t } from "elysia";
 
@@ -14,7 +14,7 @@ export const deleteJob = new Elysia()
   // Browsers automatically follow GET links, which can lead to silent data deletion.
   .post(
     "/delete/:jobId",
-    async ({ params, redirect, user }) => {
+    async ({ params, redirect, user, set }) => {
       const job = db
         .query("SELECT * FROM jobs WHERE user_id = ? AND id = ?")
         .as(Jobs)
@@ -24,12 +24,17 @@ export const deleteJob = new Elysia()
         return redirect(`${WEBROOT}/results`, 302);
       }
 
+      if (job.status === "pending") {
+        set.status = 409;
+        return { message: "文件正在排队或转换，请办理完成后再删除。" };
+      }
+
       // delete the directories
-      rmSync(`${outputDir}${job.user_id}/${job.id}`, {
+      await rm(`${outputDir}${job.user_id}/${job.id}`, {
         recursive: true,
         force: true,
       });
-      rmSync(`${uploadsDir}${job.user_id}/${job.id}`, {
+      await rm(`${uploadsDir}${job.user_id}/${job.id}`, {
         recursive: true,
         force: true,
       });
@@ -73,9 +78,14 @@ export const deleteJob = new Elysia()
             continue;
           }
 
+          if (job.status === "pending") {
+            results.failed.push({ jobId, error: "文件正在排队或转换，请办理完成后再删除。" });
+            continue;
+          }
+
           // Delete the directories
           try {
-            rmSync(`${outputDir}${job.user_id}/${job.id}`, {
+            await rm(`${outputDir}${job.user_id}/${job.id}`, {
               recursive: true,
               force: true,
             });
@@ -84,7 +94,7 @@ export const deleteJob = new Elysia()
           }
 
           try {
-            rmSync(`${uploadsDir}${job.user_id}/${job.id}`, {
+            await rm(`${uploadsDir}${job.user_id}/${job.id}`, {
               recursive: true,
               force: true,
             });

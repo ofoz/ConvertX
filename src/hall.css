@@ -1,0 +1,2984 @@
+﻿/* Self-contained service-hall stage. Character fan-art attribution lives beside assets.
+   Procedural sleeves, hands, room fixtures and poses are original scene derivatives. */
+.service-hall {
+  --hall-blue: #4c8be8;
+  --hall-ink: #294964;
+  --hall-orange: #db9065;
+  --hall-mint: #69b59a;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  color: var(--hall-ink);
+  font-family: inherit;
+}
+.service-hall *,
+.service-hall *::before,
+.service-hall *::after {
+  box-sizing: border-box;
+}
+.service-hall [hidden] {
+  display: none !important;
+}
+.service-hall button {
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.service-hall button:focus-visible {
+  outline: 3px solid #205fbf;
+  outline-offset: 6px;
+}
+.hall-room {
+  position: relative;
+  height: 626px;
+  overflow: hidden;
+  border: 1px solid #d9e8f5;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #edf6ff 0%, #f7faff 50%, #e4eff9 82%);
+  box-shadow:
+    0 18px 48px #5383ad12,
+    inset 0 1px 0 #fff;
+}
+.hall-room::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8px;
+  background: linear-gradient(90deg, #c3d9f3, #dbe9fc 40%, #d9ddf7 70%, #c8e5e9);
+}
+.hall-ceiling-light {
+  position: absolute;
+  top: 0;
+  width: 100px;
+  height: 54px;
+  border-bottom: 5px solid white;
+  border-radius: 0 0 50% 50%;
+  background: linear-gradient(180deg, #dce8f6, #f8fbff);
+  box-shadow: 0 16px 55px 12px #fff9;
+}
+.hall-ceiling-light-left {
+  left: 8%;
+  transform: rotate(-7deg);
+}
+.hall-ceiling-light-right {
+  right: 8%;
+  transform: rotate(7deg);
+}
+.hall-window {
+  position: absolute;
+  bottom: 161px;
+  width: 27%;
+  height: 340px;
+  border: 8px solid #fff;
+  border-bottom: 0;
+  border-radius: 100px 100px 0 0;
+  box-shadow:
+    0 0 0 1px #dce7f3,
+    inset 0 0 24px #fff8;
+  overflow: hidden;
+}
+.hall-window::before {
+  content: "";
+  position: absolute;
+  top: 28%;
+  left: -10%;
+  width: 150%;
+  height: 35px;
+  transform: rotate(-33deg);
+  background: #ffffff42;
+  box-shadow: 0 55px 0 #ffffff21;
+}
+.hall-window i {
+  position: absolute;
+  height: 12px;
+  width: 70px;
+  border-radius: 30px;
+  background: #ffffff91;
+  top: 40px;
+  right: 20%;
+}
+.hall-window i:nth-child(2) {
+  top: 52px;
+  right: 13%;
+  width: 95px;
+}
+.hall-window i:nth-child(3) {
+  top: 66px;
+  right: 23%;
+  width: 55px;
+}
+.hall-window-left {
+  left: 4.5%;
+  background: linear-gradient(170deg, #f9e5cf, #f7e9e1 65%, #f2e6e1);
+}
+.hall-window-center {
+  left: 34%;
+  width: 32%;
+  height: 370px;
+  border-radius: 135px 135px 0 0;
+  background: linear-gradient(160deg, #bdddff, #daeaff 60%, #dddafa);
+}
+.hall-window-right {
+  right: 4.5%;
+  background: linear-gradient(170deg, #d9eee7, #e4f5e9 70%, #d3ebee);
+}
+.hall-wall-note {
+  position: absolute;
+  top: 134px;
+  right: 4%;
+  padding: 10px 12px;
+  color: #7b96a7;
+  border: 1px solid #d2e1ed;
+  border-radius: 3px;
+  background: #fff9;
+  font-size: 9px;
+  line-height: 1.6;
+  transform: rotate(3deg);
+}
+.hall-wall-note span {
+  display: block;
+  margin-bottom: 4px;
+  color: #527f9b;
+  font-weight: 700;
+}
+.hall-stations {
+  position: absolute;
+  inset: 0 3.5%;
+  display: grid;
+  grid-template-columns: 1fr 1.26fr 1fr;
+  gap: 12px;
+}
+.hall-station {
+  position: relative;
+  min-width: 0;
+}
+.hall-bay-label {
+  position: absolute;
+  z-index: 6;
+  top: 111px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: max-content;
+  padding: 8px 12px 8px 9px;
+  background: #fffc;
+  border: 1px solid #fff;
+  box-shadow: 0 4px 8px #25436806;
+  border-radius: 9px;
+  transform: translateX(-50%);
+}
+.hall-bay-label b {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 31px;
+  border-radius: 5px;
+  color: white;
+  background: var(--hall-orange);
+  font-size: 17px;
+  font-weight: 800;
+}
+.hall-bay-label span {
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.hall-bay-label small {
+  display: block;
+  margin-top: 2px;
+  letter-spacing: 0.12em;
+  font-size: 8px;
+  color: #8c9dab;
+}
+.hall-bay-label > i {
+  width: 5px;
+  height: 5px;
+  background: #90be9d;
+  border-radius: 50%;
+  margin-left: 8px;
+}
+.hall-station-deepseek .hall-bay-label {
+  top: 102px;
+}
+.hall-station-deepseek .hall-bay-label b {
+  background: var(--hall-blue);
+}
+.hall-station-gpt .hall-bay-label b {
+  background: var(--hall-mint);
+}
+.hall-character {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  clip-path: inset(0 0 50% 0);
+}
+.hall-character-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 6px 7px #48668b12);
+}
+.hall-character-claude,
+.hall-character-gpt {
+  width: 250px;
+  height: 460px;
+  top: 224px;
+}
+.hall-character-deepseek {
+  top: 207px;
+  width: 330px;
+  height: 594px;
+  transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.25, 1);
+  transform: translate(-50%, 0);
+}
+.hall-character-deepseek .hall-face-default {
+  clip-path: polygon(0 0, 100% 0, 100% 20%, 65% 20%, 63% 35%, 100% 35%, 100% 100%, 0 100%);
+}
+.service-hall:is(
+    [data-stage="welcome"],
+    [data-stage="ready"],
+    [data-stage="delivering"],
+    [data-stage="working"],
+    [data-stage="idle"],
+    [data-stage="error"]
+  )
+  .hall-native-hand {
+  display: none;
+}
+.hall-native-hand {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  clip-path: polygon(65% 20%, 100% 20%, 100% 35%, 63% 35%);
+  transform-origin: 67% 33%;
+  transition: transform 0.45s ease;
+  z-index: 2;
+}
+.hall-face-cheerful,
+.hall-face-serious,
+.hall-face-starry,
+.hall-face-exasperated {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.hall-character-deepseek .hall-character-image {
+  transition: opacity 0.18s;
+}
+.hall-dialogue-wrap {
+  position: absolute;
+  z-index: 12;
+  top: 160px;
+  left: 50%;
+  width: 330px;
+  max-width: 120%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border: 1px solid #bcd9fb;
+  border-radius: 15px;
+  color: #376293;
+  background: #fffffffa;
+  box-shadow: 0 5px 14px #427bb012;
+}
+.hall-dialogue-wrap::after {
+  content: "";
+  position: absolute;
+  left: 60%;
+  bottom: -6px;
+  width: 11px;
+  height: 11px;
+  background: #fff;
+  border-right: 1px solid #bcd9fb;
+  border-bottom: 1px solid #bcd9fb;
+  transform: rotate(45deg);
+}
+.hall-dialogue-avatar {
+  flex: 0 0 26px;
+  color: #82b0eb;
+}
+.hall-dialogue-avatar .hall-whale-mark {
+  width: 26px;
+}
+.hall-dialogue {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.65;
+  font-weight: 650;
+}
+.hall-dialogue-spark {
+  font-size: 13px;
+  color: #ecbf76;
+}
+.hall-side-bubble {
+  position: absolute;
+  z-index: 9;
+  top: 179px;
+  left: 50%;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 10px;
+  width: max-content;
+  max-width: 110%;
+  font-size: 10px;
+  border-radius: 12px;
+  background: #fff9;
+  border: 1px solid #e9ddd4;
+  transform: translateX(-50%) rotate(-3deg);
+  color: #a4785b;
+  white-space: nowrap;
+}
+.hall-side-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 39%;
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid #e9ddd4;
+  border-bottom: 1px solid #e9ddd4;
+  background: #fffbf8;
+  transform: rotate(45deg);
+}
+.hall-gpt-bubble {
+  color: #609a87;
+  border-color: #d4e9df;
+  transform: translateX(-50%) rotate(3deg);
+}
+.hall-gpt-bubble::after {
+  border-color: #d4e9df;
+  background: #f9fffc;
+}
+.hall-claude-bubble > span {
+  font-size: 13px;
+}
+.hall-gpt-bubble > span {
+  font-size: 17px;
+}
+.hall-frustration {
+  position: absolute;
+  top: 54px;
+  right: 44px;
+  font-size: 30px;
+  color: #c36b52;
+  text-shadow: 2px 2px white;
+  animation: hall-frustrated 1.2s ease-in-out infinite;
+}
+.hall-sweat {
+  position: absolute;
+  top: 89px;
+  right: 54px;
+  width: 8px;
+  height: 13px;
+  border: 1px solid #71acd3;
+  border-radius: 50% 50% 50% 2px;
+  transform: rotate(-22deg);
+  background: #bbe5ff;
+}
+.hall-chair {
+  position: absolute;
+  top: 321px;
+  left: 50%;
+  width: 133px;
+  height: 165px;
+  transform: translateX(-50%);
+  border-radius: 35px 35px 10px 10px;
+  background: linear-gradient(90deg, #a7bfd4, #c4d7e7 30%, #aec7dd);
+  border: 4px solid #e9f2f9;
+  box-shadow: 0 2px 0 #8ea9c0;
+  z-index: 1;
+}
+.hall-counter {
+  position: absolute;
+  z-index: 5;
+  bottom: 48px;
+  left: 0;
+  right: 0;
+  height: 148px;
+  pointer-events: none;
+}
+.hall-counter-top {
+  position: absolute;
+  inset: 0 -10px auto;
+  height: 40px;
+  background: linear-gradient(180deg, #fff8ec, #f4e0c3);
+  transform: perspective(400px) rotateX(18deg);
+  border-top: 2px solid #fffdf7;
+  border-bottom: 2px solid #ddc3a3;
+  box-shadow: 0 -3px 8px #69849b0a;
+}
+.hall-counter-edge {
+  position: absolute;
+  top: 34px;
+  width: 100%;
+  height: 13px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(#f1dbc0, #e5cbac);
+  border-top: 1px solid #fff5e5;
+  box-shadow: 0 4px 5px #90775312;
+}
+.hall-counter-face {
+  position: absolute;
+  top: 47px;
+  width: 100%;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 27px, #d2bda318 28px 29px),
+    linear-gradient(180deg, #f3e8d9, #f8f1e7);
+  border-bottom: 8px solid #e6d7c2;
+}
+.hall-counter-face::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 5px;
+  background: #baa08716;
+}
+.hall-station-front {
+  position: absolute;
+  z-index: 8;
+  top: 505px;
+  left: 50%;
+  width: 190px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  transform: translateX(-50%);
+  border: 1px solid #ddc5ac;
+  border-top: 3px solid #e3aa7d;
+  border-radius: 6px;
+  background: #fffaf2;
+  box-shadow: 0 3px 5px #9d7b4311;
+}
+.hall-station-front > b {
+  color: #a37452;
+  font-size: 16px;
+}
+.hall-station-front > span {
+  color: #a38d76;
+  font-size: 10px;
+}
+.hall-front-light {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  height: 3px;
+  width: 13px;
+  border-radius: 3px;
+  background: #b9d7b5;
+}
+.hall-station-deepseek .hall-station-front {
+  border-color: #c7d9ee;
+  border-top-color: #7aadee;
+  background: #f6faff;
+  color: #6c9bd9;
+}
+.hall-station-deepseek .hall-station-front > b {
+  color: #477ab5;
+}
+.hall-station-deepseek .hall-station-front > span {
+  color: #8b9fb6;
+}
+.hall-station-gpt .hall-station-front {
+  border-color: #cfdfd5;
+  border-top-color: #9bc8b2;
+  background: #f8fffa;
+}
+.hall-station-gpt .hall-station-front > b {
+  color: #609380;
+}
+.hall-station-gpt .hall-station-front > span {
+  color: #95aa99;
+}
+.hall-monitor {
+  position: absolute;
+  z-index: 7;
+  top: 351px;
+  left: 23%;
+  width: 135px;
+  height: 93px;
+  padding: 0;
+  background: #f4f7fa;
+  border: 1px solid #a6bdce;
+  border-radius: 8px;
+  box-shadow:
+    2px 4px 0 #9eafbe,
+    0 6px 12px #244d7215;
+  transform: perspective(600px) rotateY(-10deg) rotate(-5deg);
+}
+.hall-monitor::before {
+  content: "";
+  position: absolute;
+  left: 46%;
+  top: 100%;
+  width: 12px;
+  height: 16px;
+  background: #c4d0d9;
+  border: 1px solid #9eb1c0;
+}
+.hall-monitor::after {
+  content: "";
+  position: absolute;
+  left: 31%;
+  top: calc(100% + 12px);
+  width: 53px;
+  height: 6px;
+  background: #e2e9ed;
+  border: 1px solid #afc1ce;
+  border-radius: 50%;
+}
+.hall-monitor-brand {
+  position: absolute;
+  bottom: 3px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 5px;
+  color: #8c9dae;
+  letter-spacing: 0.12em;
+}
+.hall-code {
+  background: #fff4e9;
+  border: 1px solid #eddbcb;
+  border-radius: 3px;
+  height: 100%;
+  padding: 9px 7px;
+  color: #bc815c;
+  font: 6px/1.7 monospace;
+  overflow: hidden;
+}
+.hall-code span {
+  display: block;
+  white-space: pre;
+}
+.hall-code i {
+  display: inline-block;
+  width: 4px;
+  height: 7px;
+  background: #dc9a70;
+  animation: hall-cursor 1s steps(1) infinite;
+}
+.hall-monitor-deepseek {
+  left: 9%;
+  top: 359px;
+  width: 139px;
+  height: 92px;
+  transform: perspective(600px) rotateY(-12deg) rotate(-7deg);
+  transition: transform 0.6s;
+  transform-origin: 50% 100%;
+}
+.hall-monitor-screen {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(150deg, #e1f0ff, #eff4ff);
+  border: 1px solid #cadaee;
+}
+.hall-monitor-screen .hall-whale-mark {
+  width: 24px;
+  height: 20px;
+  color: #7da8e1;
+}
+.hall-task-label {
+  margin-top: 3px;
+  max-width: 100%;
+  padding: 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #5c83b6;
+  font-size: 7px;
+}
+.hall-computer-activity {
+  display: none;
+  align-items: center;
+  gap: 3px;
+  height: 10px;
+  margin-top: 3px;
+}
+.hall-computer-activity i {
+  width: 3px;
+  height: 4px;
+  border-radius: 2px;
+  background: #87afe5;
+  animation: hall-computing 0.7s ease-in-out infinite alternate;
+}
+.hall-computer-activity i:nth-child(2) {
+  animation-delay: -0.2s;
+}
+.hall-computer-activity i:nth-child(3) {
+  animation-delay: -0.4s;
+}
+.hall-computer-activity i:nth-child(4) {
+  animation-delay: -0.1s;
+}
+.hall-computer-activity i:nth-child(5) {
+  animation-delay: -0.3s;
+}
+.hall-monitor-gpt {
+  left: 28%;
+  transform: perspective(600px) rotateY(10deg) rotate(5deg);
+  background: #f9fffc;
+}
+.hall-gpt-flower {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 47px;
+  font-size: 31px;
+  color: #83b69d;
+  border-radius: 3px 3px 0 0;
+  background: #e8f4ec;
+}
+.hall-gpt-screen-note {
+  display: block;
+  height: 20px;
+  text-align: center;
+  font-size: 6px;
+  color: #7a9a87;
+  background: #e8f4ec;
+}
+.hall-keyboard,
+.hall-side-keyboard {
+  position: absolute;
+  z-index: 6;
+  top: 430px;
+  left: 24%;
+  width: 112px;
+  height: 20px;
+  border: 1px solid #aebed0;
+  border-radius: 3px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 4px, #b4c4d4 4px 5px),
+    repeating-linear-gradient(90deg, transparent 0 6px, #acbdce 6px 7px), #e6edf5;
+  transform: perspective(160px) rotateX(48deg) rotateZ(173deg);
+  box-shadow: 0 3px 0 #bdcad7;
+}
+.hall-side-keyboard {
+  width: 90px;
+  left: 42%;
+  top: 426px;
+  transform: perspective(160px) rotateX(48deg) rotateZ(175deg);
+}
+.hall-station-gpt .hall-side-keyboard {
+  left: 22%;
+  transform: perspective(160px) rotateX(48deg) rotateZ(185deg);
+}
+.hall-mug {
+  position: absolute;
+  z-index: 8;
+  top: 445px;
+  right: 16%;
+  width: 25px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 2px 2px 8px 8px;
+  background: #fff7ee;
+  border: 1px solid #d9c1a6;
+  color: #c59a77;
+  box-shadow: 0 3px 2px #9a795216;
+}
+.hall-mug::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  top: 5px;
+  width: 9px;
+  height: 13px;
+  border: 2px solid #d9c1a6;
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+}
+.hall-mug > i {
+  position: absolute;
+  left: 7px;
+  top: -17px;
+  height: 12px;
+  width: 4px;
+  border-left: 1px solid #aaa8;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+.hall-mug > span {
+  font-size: 13px;
+}
+.hall-mug-deepseek {
+  right: 18%;
+  top: 462px;
+  background: #f4faff;
+  border-color: #b7cde5;
+  color: #88b1e4;
+}
+.hall-mug-deepseek::after {
+  border-color: #b7cde5;
+}
+.hall-mug-deepseek .hall-whale-mark {
+  width: 17px;
+  height: 17px;
+}
+.hall-mug-gpt {
+  background: #f6fff7;
+  border-color: #bbd3bf;
+  color: #8bb094;
+}
+.hall-mug-gpt::after {
+  border-color: #bbd3bf;
+}
+.hall-divider {
+  position: absolute;
+  top: 330px;
+  z-index: 8;
+  width: 8px;
+  height: 185px;
+  pointer-events: none;
+}
+.hall-divider-left {
+  left: 32%;
+}
+.hall-divider-right {
+  right: 32%;
+}
+.hall-divider::before {
+  content: "";
+  position: absolute;
+  left: -19px;
+  width: 46px;
+  height: 149px;
+  background: linear-gradient(105deg, #ffffff14, #c5e5f136 40%, #ffffff7a 42%, #ffffff05 45%);
+  border: 1px solid #bfdaea80;
+  border-top: 3px solid #d6e7f0;
+  border-radius: 6px 6px 0 0;
+  transform: skewY(10deg);
+}
+.hall-divider i {
+  position: absolute;
+  height: 150px;
+  width: 3px;
+  background: #b6ccda;
+  box-shadow: 1px 0 0 white;
+}
+.hall-divider span {
+  position: absolute;
+  top: 148px;
+  left: -8px;
+  width: 19px;
+  height: 6px;
+  background: #c0d0dc;
+  border: 1px solid #9fb6c8;
+  border-radius: 50%;
+}
+.hall-divider-right::before {
+  transform: skewY(-10deg);
+}
+.hall-floor {
+  position: absolute;
+  z-index: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 91px;
+  background: linear-gradient(180deg, #d7e3ee, #eef4fa);
+}
+.hall-floor::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 138px, #abc0d135 139px 140px);
+  transform: perspective(150px) rotateX(25deg);
+}
+.hall-floor-caption {
+  position: absolute;
+  bottom: 17px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #8ba2b7;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+.hall-floor-caption > span:last-child {
+  color: #c4afda;
+  padding-left: 16px;
+}
+.hall-floor-dot {
+  width: 4px;
+  height: 4px;
+  background: #8ab9b0;
+  border-radius: 50%;
+}
+.hall-plant {
+  position: absolute;
+  z-index: 3;
+  bottom: 113px;
+  width: 70px;
+  height: 190px;
+  pointer-events: none;
+}
+.hall-plant-left {
+  left: -20px;
+}
+.hall-plant-right {
+  right: -20px;
+  transform: scaleX(-1);
+}
+.hall-plant-stem {
+  position: absolute;
+  bottom: 38px;
+  left: 34px;
+  width: 3px;
+  height: 116px;
+  background: #8cae8d;
+  transform: rotate(-9deg);
+}
+.hall-leaf {
+  position: absolute;
+  width: 26px;
+  height: 59px;
+  border-radius: 80% 0 80% 0;
+  background: linear-gradient(60deg, #92b89a, #c1d9b8);
+  transform: rotate(-30deg);
+}
+.hall-leaf-one {
+  left: 11px;
+  top: 5px;
+}
+.hall-leaf-two {
+  left: 32px;
+  top: 34px;
+  transform: rotate(32deg);
+}
+.hall-leaf-three {
+  left: 5px;
+  top: 62px;
+  transform: rotate(-52deg);
+}
+.hall-leaf-four {
+  left: 38px;
+  top: 82px;
+  width: 22px;
+  height: 44px;
+  transform: rotate(43deg);
+}
+.hall-plant-pot {
+  position: absolute;
+  bottom: 0;
+  left: 15px;
+  width: 42px;
+  height: 50px;
+  border: 1px solid #c4d2da;
+  border-top: 4px solid #e4ebed;
+  border-radius: 5px 5px 15px 15px;
+  background: linear-gradient(90deg, #eff4f4, #fff);
+}
+/* Local rigs cover only the lower torso/arms, never the character's face. */
+.hall-hand-rig {
+  position: absolute;
+  top: 111px;
+  left: 30px;
+  width: 120px;
+  height: 112px;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.hall-rig-arm {
+  position: absolute;
+  top: 0;
+  width: 120px;
+  height: auto;
+  transform-origin: 50% 20%;
+}
+.hall-rig-left {
+  left: 0;
+  transform: scaleX(-1) rotate(-5deg);
+}
+.hall-rig-right {
+  display: none;
+}
+.hall-sleeve {
+  fill: #343650;
+  stroke: #272b45;
+  stroke-width: 1.4;
+}
+.hall-cuff {
+  fill: #f4effa;
+  stroke: #9190af;
+  stroke-width: 1.3;
+}
+.hall-skin {
+  fill: #ffe5db;
+  stroke: #c59d9a;
+  stroke-width: 1.2;
+}
+.hall-hand-line {
+  stroke: #d0a7a1;
+  stroke-width: 0.9;
+  stroke-linecap: round;
+}
+.hall-receive {
+  position: absolute;
+  z-index: 15;
+  top: 339px;
+  left: 50%;
+  width: 258px;
+  height: 99px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+.hall-receive:disabled {
+  cursor: default;
+}
+.hall-hand-target {
+  position: absolute;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: #80a8dc;
+  font-size: 20px;
+  border: 1px solid #75a8e2b3;
+  border-radius: 50%;
+  background: #e9f4ff6b;
+}
+.hall-hand-target-left {
+  left: 14px;
+  top: 15px;
+}
+.hall-hand-target-right {
+  right: 0;
+}
+.hall-hand-target i {
+  position: absolute;
+  inset: -7px;
+  border: 1px solid #83b4ee77;
+  border-radius: 50%;
+  animation: hall-receive-ring 2s ease-out infinite;
+}
+.hall-hand-target i:nth-child(2) {
+  animation-delay: -1s;
+}
+.hall-receive-label {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  padding: 8px 12px;
+  background: #f6fbff;
+  color: #4778b2;
+  border: 1px solid #aacdf5;
+  box-shadow: 0 4px 12px #577ca321;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.hall-receive:not(:disabled):hover .hall-receive-label {
+  background: #deedff;
+  transform: translateX(-50%) translateY(-2px);
+}
+.hall-incoming-paper {
+  position: absolute;
+  z-index: 10;
+  top: 332px;
+  left: 53%;
+  width: 52px;
+  height: 69px;
+  opacity: 0;
+  background: #fff;
+  border: 1px solid #b2cce7;
+  border-radius: 3px;
+  transform: rotate(-9deg);
+  box-shadow: 2px 3px 0 #dce8f6;
+}
+.hall-incoming-paper > i {
+  display: block;
+  width: 29px;
+  height: 2px;
+  background: #c7dbf1;
+  margin: 9px 8px 0;
+}
+.hall-incoming-paper > i:nth-child(3) {
+  width: 17px;
+}
+.hall-incoming-paper > span {
+  display: block;
+  margin: 9px 8px;
+  color: #91b1d7;
+  font: 6px monospace;
+}
+.hall-typing-hands,
+.hall-gesture-hands {
+  position: absolute;
+  z-index: 6;
+  top: 423px;
+  left: 30%;
+  width: 106px;
+  height: 17px;
+  opacity: 0;
+  pointer-events: none;
+}
+.hall-typing-hands i {
+  position: absolute;
+  top: 0;
+  width: 29px;
+  height: 14px;
+  border: 1px solid #ca9f9b;
+  border-radius: 10px 10px 6px 7px;
+  background: linear-gradient(90deg, #dae3f6 0 30%, #ffe5db 32%);
+  transform: rotate(12deg);
+}
+.hall-typing-hands i:nth-child(2) {
+  right: 8px;
+  transform: rotate(-12deg);
+}
+.hall-side-typing {
+  position: absolute;
+  z-index: 6;
+  top: 422px;
+  left: 43%;
+  width: 83px;
+  height: 19px;
+}
+.hall-side-typing i {
+  position: absolute;
+  width: 26px;
+  height: 12px;
+  border: 1px solid #c19b8d;
+  background: linear-gradient(90deg, #f7ead8 0 25%, #ffdfcd 30%);
+  border-radius: 8px 9px 4px 4px;
+  animation: hall-typing-left 0.18s ease-in-out infinite alternate;
+}
+.hall-side-typing i:nth-child(2) {
+  right: 7px;
+  animation-delay: -0.1s;
+}
+.hall-idle-note {
+  position: absolute;
+  top: 65px;
+  right: 50px;
+  opacity: 0;
+  font-size: 30px;
+  color: #7ba6da;
+  text-shadow: 1px 2px #fff;
+}
+.hall-work-spark {
+  position: absolute;
+  opacity: 0;
+  color: #79a6e6;
+  text-shadow: 1px 1px #fff;
+}
+.hall-work-spark-one {
+  left: 44px;
+  top: 155px;
+  font-size: 27px;
+}
+.hall-work-spark-two {
+  right: 30px;
+  top: 130px;
+  font-size: 20px;
+}
+.hall-stack {
+  position: absolute;
+  z-index: 16;
+  top: 405px;
+  right: 5%;
+  width: 118px;
+  height: 98px;
+}
+.hall-collect {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+.hall-paper-sheet {
+  position: absolute;
+  display: block;
+  top: 3px;
+  left: 12px;
+  width: 86px;
+  height: 70px;
+  border: 1px solid #b6cce5;
+  border-radius: 3px;
+  background: #fff;
+  transform: rotate(-6deg);
+  box-shadow:
+    0 3px 0 #d9e6f4,
+    0 5px 0 #b8cbdf;
+}
+.hall-paper-back {
+  transform: rotate(10deg) translate(3px, 2px);
+}
+.hall-paper-middle {
+  transform: rotate(2deg) translate(-4px, 3px);
+}
+.hall-paper-front {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 8px;
+  transition: transform 0.2s;
+}
+.hall-paper-seal {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  color: #58a987;
+  border: 1px solid #b3ddc9;
+  border-radius: 50%;
+  background: #effbf6;
+}
+.hall-paper-front strong {
+  font-size: 13px;
+  color: #5582b8;
+}
+.hall-paper-front > span:nth-child(3) {
+  display: block;
+  margin-top: 5px;
+  width: 65px;
+  font-size: 7px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #8093a9;
+  text-align: left;
+}
+.hall-paper-lines {
+  margin-top: 7px;
+  width: 34px;
+  height: 2px;
+  background: #dbe5f1;
+  box-shadow: 0 5px 0 #e6edf6;
+}
+.hall-collect-label {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  transform: translateX(-50%);
+  width: max-content;
+  border-radius: 12px;
+  background: #f2f8ff;
+  border: 1px solid #bad4f4;
+  color: #5688bf;
+  padding: 5px 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.hall-collect:hover .hall-paper-front {
+  transform: rotate(-9deg) translateY(-7px);
+}
+.hall-collect:hover .hall-collect-label {
+  background: #dcecff;
+}
+.hall-start-new {
+  position: absolute;
+  z-index: 16;
+  top: 447px;
+  right: 0;
+  font-size: 10px !important;
+  color: #5584b8;
+  padding: 8px 11px;
+  border-radius: 15px;
+  border: 1px solid #b6d0ec;
+  background: #f4faff;
+  cursor: pointer;
+  box-shadow: 0 3px 7px #5a7f9d10;
+}
+.hall-start-new:hover {
+  background: #dfedff;
+}
+/* State-driven scene; no private JS timers or fictional completion percentage. */
+.service-hall[data-stage="welcome"] .hall-character-deepseek {
+  animation: hall-rise 0.9s cubic-bezier(0.15, 0.75, 0.25, 1) both;
+}
+.service-hall[data-stage="welcome"] .hall-face-default,
+.service-hall[data-stage="ready"] .hall-face-default,
+.service-hall[data-stage="delivering"] .hall-face-default,
+.service-hall[data-stage="working"] .hall-face-default,
+.service-hall[data-stage="idle"] .hall-face-default,
+.service-hall[data-stage="error"] .hall-face-default {
+  opacity: 0;
+}
+.service-hall[data-stage="welcome"] .hall-face-cheerful,
+.service-hall[data-stage="ready"] .hall-face-starry,
+.service-hall[data-stage="delivering"] .hall-face-cheerful,
+.service-hall[data-stage="working"] .hall-face-serious,
+.service-hall[data-stage="idle"] .hall-face-cheerful,
+.service-hall[data-stage="error"] .hall-face-exasperated {
+  opacity: 1;
+}
+.service-hall[data-stage="welcome"] .hall-hand-rig,
+.service-hall[data-stage="receiving"] .hall-hand-rig,
+.service-hall[data-stage="uploading"] .hall-hand-rig,
+.service-hall[data-stage="placing"] .hall-hand-rig,
+.service-hall[data-stage="ready"] .hall-hand-rig,
+.service-hall[data-stage="delivering"] .hall-hand-rig {
+  opacity: 1;
+}
+.service-hall[data-stage="welcome"] .hall-rig-right {
+  animation: hall-wave 1.1s ease-in-out 0.4s 3;
+}
+.service-hall[data-stage="choosing"] .hall-character-deepseek {
+  transform: translate(-50%, 3px);
+}
+.service-hall[data-stage="receiving"] .hall-rig-left {
+  transform: rotate(-15deg);
+}
+.service-hall[data-stage="receiving"] .hall-rig-right {
+  transform: scaleX(-1) rotate(-15deg);
+}
+.service-hall[data-stage="receiving"] .hall-receive {
+  opacity: 1;
+  visibility: visible;
+}
+.service-hall[data-stage="receiving"] .hall-dialogue-wrap {
+  border-color: #86b6f0;
+  box-shadow: 0 5px 20px #6a9add20;
+}
+.service-hall[data-stage="uploading"] .hall-incoming-paper {
+  opacity: 1;
+  animation: hall-accept-paper 0.65s ease-out both;
+}
+.service-hall[data-stage="uploading"] .hall-rig-right {
+  transform: scaleX(-1) rotate(12deg);
+}
+.service-hall[data-stage="placing"] .hall-incoming-paper {
+  opacity: 1;
+  animation: hall-place-paper 0.7s ease-in both;
+}
+.service-hall[data-stage="placing"] .hall-rig-right {
+  animation: hall-lower-arm 0.7s ease-in both;
+}
+.service-hall[data-stage="working"] .hall-character-deepseek,
+.service-hall[data-stage="idle"] .hall-character-deepseek {
+  transform: translate(-50%, 42px);
+}
+.service-hall[data-stage="working"] .hall-typing-hands {
+  opacity: 1;
+}
+.service-hall[data-stage="working"] .hall-typing-hands i {
+  animation: hall-typing-left 0.13s ease-in-out infinite alternate;
+}
+.service-hall[data-stage="working"] .hall-typing-hands i:nth-child(2) {
+  animation-name: hall-typing-right;
+  animation-delay: -0.08s;
+}
+.service-hall[data-stage="working"] .hall-computer-activity {
+  display: flex;
+}
+.service-hall[data-stage="working"] .hall-work-spark {
+  opacity: 1;
+  animation: hall-work-twinkle 0.6s ease-in-out infinite alternate;
+}
+.service-hall[data-stage="working"] .hall-work-spark-two {
+  animation-delay: -0.3s;
+}
+.service-hall[data-stage="working"] .hall-monitor-deepseek {
+  transform: perspective(600px) rotateY(-12deg) rotate(-7deg) translateY(2px);
+}
+.service-hall[data-stage="ready"] .hall-stack {
+  animation: hall-paper-arrive 0.5s ease-out both;
+}
+.service-hall[data-stage="ready"] .hall-rig-right {
+  transform: scaleX(-1) rotate(-20deg);
+}
+.service-hall[data-stage="delivering"] .hall-stack {
+  transform: translateY(5px) rotate(-2deg);
+  transition: transform 0.5s ease;
+  pointer-events: none;
+}
+.service-hall[data-stage="delivering"] .hall-rig-right {
+  animation: hall-pass-paper 0.65s ease-in both;
+}
+.service-hall[data-stage="idle"] .hall-idle-note {
+  opacity: 1;
+  animation: hall-idle-tune 2.8s ease-in-out infinite;
+}
+.service-hall[data-stage="idle"] .hall-mug-deepseek {
+  transform: translate(-10px, -23px) rotate(-12deg);
+  transition: transform 0.7s;
+}
+.service-hall[data-stage="idle"] .hall-character-deepseek .hall-character-image {
+  transform-origin: 50% 75%;
+  animation: hall-relax 5s ease-in-out infinite;
+}
+.service-hall[data-stage="error"] .hall-dialogue-wrap {
+  border-color: #e4b9b3;
+  color: #aa766c;
+  background: #fffcfa;
+}
+.service-hall[data-stage="error"] .hall-dialogue-wrap::after {
+  border-color: #e4b9b3;
+  background: #fffcfa;
+}
+.service-hall[data-stage="error"] .hall-dialogue-avatar {
+  color: #c5a2a3;
+}
+@keyframes hall-rise {
+  from {
+    transform: translate(-50%, 46px);
+  }
+  to {
+    transform: translate(-50%, 0);
+  }
+}
+@keyframes hall-wave {
+  0%,
+  100% {
+    transform: scaleX(-1) rotate(-20deg);
+  }
+  50% {
+    transform: scaleX(-1) rotate(-53deg);
+  }
+}
+@keyframes hall-frustrated {
+  0%,
+  100% {
+    transform: rotate(-8deg) scale(0.95);
+  }
+  50% {
+    transform: rotate(8deg) scale(1.1);
+  }
+}
+@keyframes hall-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes hall-computing {
+  to {
+    height: 10px;
+  }
+}
+@keyframes hall-typing-left {
+  from {
+    transform: translateY(-1px) rotate(8deg);
+  }
+  to {
+    transform: translateY(-6px) rotate(-7deg);
+  }
+}
+@keyframes hall-typing-right {
+  from {
+    transform: translateY(-5px) rotate(-12deg);
+  }
+  to {
+    transform: translateY(1px) rotate(5deg);
+  }
+}
+@keyframes hall-receive-ring {
+  0% {
+    transform: scale(0.83);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+@keyframes hall-accept-paper {
+  from {
+    transform: translate(15px, 20px) rotate(-16deg);
+    opacity: 0.2;
+  }
+  to {
+    transform: translate(-15px, -3px) rotate(-9deg);
+    opacity: 1;
+  }
+}
+@keyframes hall-place-paper {
+  from {
+    transform: translate(-15px, -3px) rotate(-9deg);
+  }
+  to {
+    transform: translate(20px, 94px) rotate(79deg) scale(0.75);
+    opacity: 0;
+  }
+}
+@keyframes hall-lower-arm {
+  to {
+    transform: scaleX(-1) rotate(33deg);
+  }
+}
+@keyframes hall-paper-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) rotate(5deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hall-deliver {
+  to {
+    opacity: 0;
+    transform: translateY(35px) scale(1.12);
+  }
+}
+@keyframes hall-pass-paper {
+  to {
+    transform: scaleX(-1) rotate(-30deg) translateY(-6px);
+  }
+}
+@keyframes hall-work-twinkle {
+  from {
+    transform: scale(0.7) rotate(-8deg);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(1.1) rotate(8deg);
+    opacity: 1;
+  }
+}
+@keyframes hall-idle-tune {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-12deg);
+  }
+  50% {
+    transform: translate(5px, -9px) rotate(8deg);
+  }
+}
+@keyframes hall-relax {
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+  50% {
+    transform: rotate(1deg);
+  }
+}
+/* The raised right forearm is clipped from the real local artwork; the left
+   receiving forearm is the explicitly documented original SVG sleeve rig. */
+.service-hall[data-stage="welcome"] .hall-hand-rig {
+  opacity: 0;
+}
+.service-hall[data-stage="welcome"] .hall-native-hand {
+  animation: hall-native-wave 1.05s ease-in-out 0.5s 3;
+}
+.service-hall[data-stage="receiving"] .hall-rig-left {
+  transform: scaleX(-1) rotate(-10deg);
+}
+.service-hall[data-stage="receiving"] .hall-native-hand {
+  transform: rotate(-9deg);
+}
+.service-hall[data-stage="uploading"] .hall-native-hand {
+  transform: rotate(8deg);
+}
+.service-hall[data-stage="placing"] .hall-native-hand {
+  animation: hall-native-place 0.7s ease-in both;
+}
+.service-hall[data-stage="working"] .hall-native-hand {
+  transform: rotate(22deg);
+}
+.service-hall[data-stage="ready"] .hall-native-hand {
+  transform: rotate(-12deg);
+}
+.service-hall[data-stage="delivering"] .hall-native-hand {
+  transform: rotate(-20deg);
+}
+.service-hall[data-stage="idle"] .hall-native-hand {
+  transform: rotate(17deg);
+}
+@keyframes hall-native-wave {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(-23deg);
+  }
+}
+@keyframes hall-native-place {
+  to {
+    transform: rotate(29deg);
+  }
+}
+/* Actual source pose frames provide seated typing and eating motions. */
+.hall-native-action {
+  display: none;
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.hall-native-action img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.hall-native-work {
+  top: 115px;
+  width: 280px;
+  height: 373px;
+  clip-path: inset(0 0 24% 0);
+}
+.hall-native-leisure {
+  top: 170px;
+  width: 275px;
+  height: 366px;
+  clip-path: inset(0 0 20% 0);
+}
+.hall-work-frame-two,
+.hall-work-frame-three,
+.hall-meal-frame-two {
+  opacity: 0;
+}
+.hall-break-label {
+  position: absolute;
+  z-index: 2;
+  top: 36px;
+  right: -18px;
+  background: #fffaf1;
+  border: 1px solid #ead9b7;
+  color: #b49665;
+  padding: 6px 9px;
+  border-radius: 12px;
+  font-size: 9px;
+  transform: rotate(6deg);
+}
+.service-hall[data-stage="working"] .hall-native-work,
+.service-hall[data-stage="idle"] .hall-native-leisure {
+  display: block;
+}
+.service-hall:is([data-stage="working"], [data-stage="idle"]) .hall-character-deepseek {
+  opacity: 0;
+}
+.service-hall[data-stage="working"] .hall-work-frame {
+  animation: hall-three-frames 1.05s steps(1) infinite;
+}
+.service-hall[data-stage="working"] .hall-work-frame-two {
+  animation-delay: -0.7s;
+}
+.service-hall[data-stage="working"] .hall-work-frame-three {
+  animation-delay: -0.35s;
+}
+.service-hall[data-stage="idle"] .hall-meal-frame {
+  animation: hall-two-frames 1.8s steps(1) infinite;
+}
+.service-hall[data-stage="idle"] .hall-meal-frame-two {
+  animation-delay: -0.9s;
+}
+.service-hall:is([data-stage="ready"], [data-stage="delivering"]) .hall-hand-rig {
+  opacity: 0;
+}
+@keyframes hall-three-frames {
+  0%,
+  32.9% {
+    opacity: 1;
+  }
+  33%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hall-two-frames {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+/* Tilt the center screen out of the handover area while keeping its stand on the desk. */
+.service-hall:is([data-stage="receiving"], [data-stage="uploading"]) .hall-monitor-deepseek {
+  transform: perspective(600px) rotateY(-12deg) rotateX(48deg) rotateZ(-7deg);
+}
+
+/* Rear-facing equipment: keyboard and typing hands sit on the character side. */
+.hall-monitor-rear {
+  position: absolute;
+  inset: 2px;
+  border: 1px solid #c6d2dd;
+  border-radius: 6px;
+  background: linear-gradient(145deg, #f9fcff, #dce6ee);
+  box-shadow:
+    inset 0 1px #fff,
+    inset -2px -3px #bbcbd62e;
+}
+.hall-monitor-claude .hall-monitor-rear {
+  background: linear-gradient(145deg, #fffdf8, #eee4d9);
+}
+.hall-monitor-gpt .hall-monitor-rear {
+  background: linear-gradient(145deg, #fafffc, #dcece4);
+}
+.hall-rear-emblem {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 24px;
+  transform: translateX(-50%);
+  color: #a7b8c8;
+  font-size: 22px;
+}
+.hall-rear-emblem .hall-whale-mark {
+  width: 27px;
+  height: 22px;
+  color: #8eadcf;
+}
+.hall-monitor-claude .hall-rear-emblem {
+  color: #c5ad98;
+}
+.hall-monitor-gpt .hall-rear-emblem {
+  color: #9fbcae;
+}
+.hall-rear-vents {
+  position: absolute;
+  bottom: 22%;
+  left: 25%;
+  width: 50%;
+  height: 11%;
+  border-radius: 2px;
+  background: repeating-linear-gradient(0deg, #a4b5c3 0 1px, transparent 1px 4px);
+  opacity: 0.65;
+}
+.hall-rear-ports {
+  position: absolute;
+  left: 8%;
+  bottom: 13%;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.hall-rear-ports i {
+  width: 6px;
+  height: 3px;
+  border: 1px solid #a3b2be;
+  border-radius: 1px;
+  background: #c5d0d8;
+}
+.hall-rear-power {
+  position: absolute;
+  bottom: 15%;
+  right: 9%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #92b89d;
+  box-shadow: 0 0 3px #80aa8c36;
+}
+.hall-monitor-cable {
+  position: absolute;
+  z-index: -1;
+  right: 10%;
+  bottom: -22px;
+  width: 22px;
+  height: 29px;
+  border-right: 1.5px solid #b1bec7;
+  border-bottom: 1.5px solid #b1bec7;
+  border-radius: 0 0 11px;
+  transform: skewX(14deg);
+}
+.hall-keyboard::after,
+.hall-side-keyboard::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 30%;
+  right: 22%;
+  height: 3px;
+  border: 1px solid #aebed0;
+  border-radius: 2px;
+  background: #f5f8fb;
+}
+.service-hall[data-stage="working"] .hall-monitor-deepseek .hall-rear-power {
+  animation: hall-cursor 1s steps(1) infinite;
+}
+@media (max-width: 700px) {
+  .hall-rear-emblem {
+    width: 18px;
+    height: 17px;
+    font-size: 15px;
+  }
+  .hall-rear-emblem .hall-whale-mark {
+    width: 20px;
+    height: 16px;
+  }
+  .hall-rear-ports {
+    gap: 2px;
+  }
+  .hall-rear-ports i {
+    width: 3px;
+    height: 2px;
+  }
+  .hall-monitor-cable {
+    width: 13px;
+    height: 17px;
+    bottom: -14px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .hall-character-claude,
+  .hall-character-gpt {
+    width: 225px;
+    height: 414px;
+  }
+  .hall-character-deepseek {
+    width: 310px;
+    height: 558px;
+  }
+  .hall-station-front {
+    width: 158px;
+  }
+  .hall-wall-note {
+    display: none;
+  }
+  .hall-monitor {
+    left: 15%;
+  }
+  .hall-monitor-deepseek {
+    left: 2%;
+  }
+  .hall-monitor-gpt {
+    left: 20%;
+  }
+  .hall-mug {
+    right: 9%;
+  }
+  .hall-stack {
+    right: -2%;
+  }
+}
+@media (max-width: 700px) {
+  .hall-room {
+    height: 601px;
+    border-radius: 19px;
+  }
+  .hall-ceiling-light {
+    width: 55px;
+    height: 34px;
+  }
+  .hall-window {
+    bottom: 157px;
+    width: 30%;
+    height: 292px;
+    border-width: 5px;
+  }
+  .hall-window-left {
+    left: -10%;
+  }
+  .hall-window-right {
+    right: -10%;
+  }
+  .hall-window-center {
+    left: 16%;
+    width: 68%;
+    height: 350px;
+    border-radius: 120px 120px 0 0;
+  }
+  .hall-stations {
+    inset: 0 1%;
+    grid-template-columns: 18% 64% 18%;
+    gap: 0;
+  }
+  .hall-station-deepseek,
+  .hall-station-claude,
+  .hall-station-gpt {
+    z-index: auto;
+  }
+  .hall-station-deepseek .hall-bay-label {
+    top: 93px;
+  }
+  .hall-station-claude .hall-bay-label,
+  .hall-station-gpt .hall-bay-label {
+    top: 246px;
+    padding: 5px;
+    gap: 0;
+    border-radius: 7px;
+  }
+  .hall-station-claude .hall-bay-label b,
+  .hall-station-gpt .hall-bay-label b {
+    width: 25px;
+    height: 25px;
+    font-size: 13px;
+  }
+  .hall-station-claude .hall-bay-label span,
+  .hall-station-gpt .hall-bay-label span,
+  .hall-station-claude .hall-bay-label > i,
+  .hall-station-gpt .hall-bay-label > i {
+    display: none;
+  }
+  .hall-character-deepseek {
+    top: 207px;
+    width: 293px;
+    height: 528px;
+  }
+  .hall-character-claude,
+  .hall-character-gpt {
+    top: 326px;
+    width: 136px;
+    height: 250px;
+  }
+  .hall-hand-rig {
+    top: 99px;
+    left: 26px;
+    width: 107px;
+  }
+  .hall-rig-arm {
+    width: 107px;
+  }
+  .hall-character-claude {
+    left: 58%;
+  }
+  .hall-character-gpt {
+    left: 42%;
+  }
+  .hall-frustration {
+    font-size: 19px;
+    top: 34px;
+    right: 25px;
+  }
+  .hall-sweat {
+    top: 57px;
+    right: 30px;
+    width: 5px;
+    height: 8px;
+  }
+  .hall-dialogue-wrap {
+    top: 150px;
+    width: 284px;
+    max-width: 128%;
+    padding: 10px;
+    gap: 7px;
+    border-radius: 12px;
+  }
+  .hall-dialogue {
+    font-size: 10px;
+  }
+  .hall-dialogue-avatar {
+    flex-basis: 22px;
+  }
+  .hall-dialogue-avatar .hall-whale-mark {
+    width: 22px;
+  }
+  .hall-side-bubble {
+    top: 291px;
+    font-size: 8px;
+    white-space: normal;
+    width: 86px;
+    max-width: none;
+    padding: 6px;
+    gap: 1px;
+    line-height: 1.4;
+  }
+  .hall-claude-bubble {
+    left: 65%;
+  }
+  .hall-gpt-bubble {
+    left: 35%;
+  }
+  .hall-side-bubble > span {
+    font-size: 12px;
+  }
+  .hall-monitor {
+    top: 399px;
+    left: 3%;
+    width: 65px;
+    height: 47px;
+    padding: 3px 3px 8px;
+    border-radius: 4px;
+    box-shadow: 1px 2px 0 #9eafbe;
+  }
+  .hall-monitor-brand {
+    font-size: 3px;
+    bottom: 2px;
+  }
+  .hall-monitor::before {
+    height: 9px;
+    width: 7px;
+  }
+  .hall-monitor::after {
+    top: calc(100% + 6px);
+    width: 28px;
+    height: 4px;
+  }
+  .hall-code {
+    padding: 3px 1px;
+    font-size: 3px;
+  }
+  .hall-code i {
+    height: 4px;
+    width: 2px;
+  }
+  .hall-monitor-deepseek {
+    top: 350px;
+    left: 3%;
+    width: 112px;
+    height: 80px;
+    padding: 5px 5px 11px;
+    border-radius: 7px;
+    box-shadow: 2px 3px 0 #9eafbe;
+  }
+  .hall-monitor-deepseek .hall-monitor-brand {
+    font-size: 4px;
+  }
+  .hall-monitor-deepseek::before {
+    height: 14px;
+    width: 9px;
+  }
+  .hall-monitor-deepseek::after {
+    top: calc(100% + 10px);
+    width: 43px;
+    height: 5px;
+  }
+  .hall-monitor-gpt {
+    left: auto;
+    right: 3%;
+  }
+  .hall-gpt-flower {
+    height: 26px;
+    font-size: 20px;
+  }
+  .hall-gpt-screen-note {
+    font-size: 3px;
+    height: 8px;
+  }
+  .hall-side-keyboard {
+    top: 422px;
+    width: 49px;
+    height: 10px;
+    left: 18%;
+  }
+  .hall-station-gpt .hall-side-keyboard {
+    left: auto;
+    right: 18%;
+  }
+  .hall-keyboard {
+    top: 422px;
+    left: 22%;
+    width: 95px;
+    height: 11px;
+  }
+  .hall-side-typing {
+    top: 417px;
+    left: 18%;
+    width: 53px;
+  }
+  .hall-side-typing i {
+    width: 17px;
+    height: 8px;
+  }
+  .hall-typing-hands {
+    top: 415px;
+    left: 26%;
+    width: 92px;
+  }
+  .hall-typing-hands i {
+    width: 26px;
+    height: 12px;
+  }
+  .hall-mug-claude,
+  .hall-mug-gpt {
+    display: none;
+  }
+  .hall-mug-deepseek {
+    top: 455px;
+    right: 15%;
+    width: 22px;
+    height: 26px;
+  }
+  .hall-stack {
+    top: 405px;
+    right: -1%;
+    transform: scale(0.9);
+    transform-origin: right bottom;
+  }
+  .hall-counter {
+    bottom: 47px;
+    height: 139px;
+  }
+  .hall-station-front {
+    top: 501px;
+    width: 67px;
+    height: 42px;
+    gap: 3px;
+    border-radius: 4px;
+    border-top-width: 2px;
+    padding: 6px 0;
+    align-content: center;
+  }
+  .hall-station-front > b {
+    font-size: 10px;
+  }
+  .hall-station-front > span {
+    width: 100%;
+    text-align: center;
+    font-size: 6px;
+  }
+  .hall-front-light {
+    width: 6px;
+    right: 3px;
+    bottom: 3px;
+    height: 2px;
+  }
+  .hall-divider {
+    top: 398px;
+    height: 100px;
+  }
+  .hall-divider-left {
+    left: 17%;
+  }
+  .hall-divider-right {
+    right: 17%;
+  }
+  .hall-divider::before {
+    height: 92px;
+    width: 23px;
+    left: -8px;
+  }
+  .hall-divider i {
+    height: 94px;
+  }
+  .hall-divider span {
+    top: 92px;
+  }
+  .hall-chair {
+    top: 328px;
+    width: 130px;
+  }
+  .hall-receive {
+    top: 329px;
+    width: 242px;
+    height: 95px;
+  }
+  .hall-hand-target {
+    width: 38px;
+    height: 38px;
+    font-size: 17px;
+  }
+  .hall-hand-target-left {
+    left: 14px;
+    top: 15px;
+  }
+  .hall-hand-target-right {
+    right: 0;
+  }
+  .hall-receive-label {
+    padding: 7px 11px;
+    font-size: 10px;
+  }
+  .hall-incoming-paper {
+    top: 324px;
+    width: 45px;
+    height: 61px;
+  }
+  .hall-incoming-paper > i {
+    width: 25px;
+    margin: 8px 7px 0;
+  }
+  .hall-start-new {
+    right: -2%;
+    top: 445px;
+    font-size: 9px !important;
+  }
+  .hall-plant {
+    bottom: 104px;
+    transform: scale(0.65);
+    transform-origin: bottom left;
+    left: -24px;
+  }
+  .hall-plant-right {
+    left: auto;
+    right: -24px;
+    transform: scale(-0.65, 0.65);
+    transform-origin: bottom right;
+  }
+  .hall-floor-caption {
+    bottom: 15px;
+    font-size: 9px;
+  }
+  .hall-work-spark-one {
+    left: 25px;
+  }
+  .hall-work-spark-two {
+    right: 22px;
+  }
+  .hall-idle-note {
+    right: 36px;
+    font-size: 25px;
+  }
+}
+@media (max-width: 380px) {
+  .hall-dialogue-wrap {
+    width: 265px;
+  }
+  .hall-character-deepseek {
+    width: 272px;
+  }
+  .hall-character-claude,
+  .hall-character-gpt {
+    width: 123px;
+  }
+  .hall-monitor-deepseek {
+    left: 0;
+    width: 102px;
+  }
+  .hall-stack {
+    right: -5%;
+  }
+  .hall-side-bubble {
+    width: 73px;
+    font-size: 7px;
+  }
+}
+/* The outer character/scene transforms are owned by the business pose.
+   These nested cutouts keep secondary motion separate from control hit areas. */
+.hall-motion-body {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  pointer-events: none;
+}
+.hall-motion-cutout {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+}
+.hall-motion-claude,
+.hall-motion-gpt {
+  --hall-comfort-drop: 13px;
+  transform: translateY(var(--hall-comfort-drop)) scale(0.93);
+  transform-origin: 50% 43%;
+}
+.hall-motion-claude {
+  animation: hall-motion-claude-shift 6.4s ease-in-out -2.1s infinite;
+}
+.hall-motion-claude-brows {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+.hall-motion-claude-frown {
+  stroke: #805553;
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  opacity: 0.65;
+  animation: hall-motion-brow-grump 6.4s ease-in-out -2.1s infinite;
+}
+.hall-motion-claude-eye-rest {
+  opacity: 0;
+  animation: hall-claude-eye-rest 6.4s ease-in-out -2.1s infinite;
+}
+.hall-motion-claude-eye-rest ellipse {
+  fill: #f0d9cf;
+}
+.hall-motion-claude-eye-rest path {
+  stroke: #76545a;
+  stroke-width: 5.5;
+  stroke-linecap: round;
+}
+.hall-motion-claude-sigh {
+  position: absolute;
+  top: 14%;
+  left: 59%;
+  z-index: 5;
+  color: #b17e71;
+  font-size: 8px;
+  white-space: nowrap;
+}
+.hall-motion-sigh-one,
+.hall-motion-sigh-two {
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  transform: translateY(5px) rotate(-4deg);
+  animation: hall-motion-sigh-sequence 6.4s ease-in-out -2.1s infinite;
+}
+.hall-motion-sigh-two {
+  color: #b6644e;
+  animation-name: hall-motion-sigh-repeat;
+}
+.hall-motion-claude-tassel {
+  /* The flower and gold tassel are clipped from the same portrait. */
+  clip-path: polygon(55% 1%, 64% 1%, 67% 5%, 66% 10%, 66% 15%, 60% 15%, 59% 11%, 57% 7%);
+  transform-origin: 61% 4%;
+  animation: hall-motion-ribbon 2.05s ease-in-out -0.32s infinite;
+}
+.hall-claude-bubble .hall-motion-mutter {
+  display: inline-flex;
+  align-self: center;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 0 0 auto;
+  min-height: 9px;
+}
+.hall-motion-mutter i {
+  display: block;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: hall-motion-mutter 1.35s ease-in-out infinite;
+}
+.hall-motion-mutter i:nth-child(2) {
+  animation-delay: -0.25s;
+}
+.hall-motion-mutter i:nth-child(3) {
+  animation-delay: -0.5s;
+}
+.hall-character-claude .hall-sweat {
+  animation: hall-motion-sweat 3.4s ease-out -0.8s infinite;
+}
+.hall-mug-claude > .hall-motion-steam {
+  border-left-color: #b5a496;
+  animation: hall-motion-steam 2.7s ease-out -0.9s infinite;
+}
+.hall-mug-claude > .hall-motion-steam:nth-child(2) {
+  left: 13px;
+  animation-delay: -2.2s;
+}
+.hall-station-claude .hall-side-typing {
+  animation: hall-claude-hand-rest 6.4s ease-in-out -2.1s infinite;
+}
+.hall-station-claude .hall-side-typing i {
+  animation-name: hall-motion-keys;
+}
+.hall-station-claude .hall-side-typing i:nth-child(2) {
+  animation-duration: 0.24s;
+}
+
+.hall-motion-gpt {
+  animation: hall-motion-cloudwatch 7s ease-in-out -2.5s infinite;
+}
+.hall-motion-gpt .hall-character-image {
+  /* Cut out the cloud from the body; the separate crop floats over the palm. */
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 12%,
+    82% 12%,
+    83% 17.5%,
+    78% 21.1%,
+    83% 21.1%,
+    100% 18.7%,
+    100% 100%,
+    0 100%
+  );
+}
+.hall-motion-gpt-cloud {
+  clip-path: polygon(82% 12%, 100% 12%, 100% 18.7%, 83% 21.1%, 78% 21.1%, 83% 17.5%);
+  transform-origin: 89% 16%;
+  animation: hall-motion-cloud 3.8s ease-in-out -0.9s infinite;
+}
+.hall-motion-gpt-tassel {
+  clip-path: polygon(56% 12%, 63% 12%, 64% 18.5%, 58% 18.5%);
+  transform-origin: 59% 13%;
+  animation: hall-motion-tassel 4.8s ease-in-out -1.8s infinite;
+}
+.hall-motion-star {
+  position: absolute;
+  color: #72aea4;
+  font-size: 12px;
+  line-height: 1;
+  text-shadow: 0 0 5px #fff;
+  animation: hall-motion-starlight 3.8s ease-in-out -1.6s infinite;
+}
+.hall-motion-star-first {
+  top: 12%;
+  left: 82%;
+}
+.hall-motion-star-second {
+  top: 19%;
+  left: 96%;
+  font-size: 9px;
+  animation-delay: -0.2s;
+}
+
+.hall-motion-deepseek {
+  --hall-lift: -3px;
+  --hall-lean: .8deg;
+  --hall-breath-time: 4.15s;
+  transform: scale(0.95);
+  transform-origin: 50% 36%;
+  animation: hall-motion-breath var(--hall-breath-time) ease-in-out infinite;
+}
+.service-hall[data-stage="welcome"] .hall-motion-deepseek {
+  --hall-breath-time: 2.9s;
+  --hall-lift: -5px;
+}
+.service-hall[data-stage="choosing"] .hall-motion-deepseek {
+  --hall-breath-time: 4.6s;
+  --hall-lean: -1.25deg;
+}
+.service-hall[data-stage="receiving"] .hall-motion-deepseek {
+  --hall-breath-time: 3.8s;
+  --hall-lift: -2px;
+  --hall-lean: .4deg;
+}
+.service-hall[data-stage="uploading"] .hall-motion-deepseek {
+  --hall-breath-time: 2.55s;
+  --hall-lean: -.6deg;
+}
+.service-hall[data-stage="placing"] .hall-motion-deepseek {
+  --hall-breath-time: 3.05s;
+  --hall-lean: -1deg;
+}
+.service-hall[data-stage="ready"] .hall-motion-deepseek {
+  --hall-breath-time: 2.8s;
+  --hall-lift: -4px;
+}
+.service-hall[data-stage="delivering"] .hall-motion-deepseek {
+  --hall-breath-time: 3.45s;
+  --hall-lean: -.65deg;
+}
+.service-hall[data-stage="error"] .hall-motion-deepseek {
+  --hall-breath-time: 5.1s;
+  --hall-lift: -2px;
+  --hall-lean: -1.35deg;
+}
+.hall-motion-tail {
+  position: absolute;
+  z-index: -1;
+  top: 31%;
+  left: 69%;
+  width: 24%;
+  height: auto;
+  transform-origin: 13% 89%;
+  animation: hall-motion-tail 4.8s ease-in-out -1.1s infinite;
+}
+.service-hall[data-stage="receiving"] .hall-motion-tail {
+  animation-duration: 3.7s;
+}
+.service-hall[data-stage="ready"] .hall-motion-tail {
+  animation-duration: 2.9s;
+}
+.hall-motion-lids {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #ffe1d7;
+  opacity: 0;
+  animation: hall-motion-blink 5.2s step-end -1.7s infinite;
+}
+.hall-motion-lash {
+  fill: none;
+  stroke: #5d4351;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.hall-motion-lids-ready,
+.hall-motion-lids-error {
+  display: none;
+}
+.service-hall:is([data-stage="welcome"], [data-stage="delivering"]) .hall-motion-lids {
+  display: none;
+}
+.service-hall:is([data-stage="ready"], [data-stage="error"]) .hall-motion-lids-default {
+  display: none;
+}
+.service-hall[data-stage="ready"] .hall-motion-lids-ready,
+.service-hall[data-stage="error"] .hall-motion-lids-error {
+  display: inline;
+}
+.hall-motion-reaction {
+  position: absolute;
+  z-index: 4;
+  top: 38%;
+  left: 74%;
+  pointer-events: none;
+  line-height: 1;
+}
+.hall-motion-reaction > span {
+  display: none;
+  font-size: 19px;
+  font-weight: 750;
+  color: #619acd;
+  text-shadow:
+    1px 1px #fff,
+    0 0 8px #ffffffd4;
+  animation: hall-motion-thought 3.1s ease-in-out -0.2s infinite;
+}
+.service-hall[data-stage="choosing"] .hall-motion-question,
+.service-hall:is(
+    [data-stage="welcome"],
+    [data-stage="ready"],
+    [data-stage="delivering"],
+    [data-stage="working"]
+  )
+  .hall-motion-spark,
+.service-hall[data-stage="error"] .hall-motion-concern,
+.service-hall[data-stage="idle"] .hall-motion-break {
+  display: block;
+}
+.hall-motion-reaction .hall-motion-spark {
+  color: #d69b46;
+}
+.hall-motion-reaction .hall-motion-concern {
+  color: #bd776b;
+}
+.hall-motion-reaction .hall-motion-break {
+  color: #6e9bbf;
+}
+.hall-native-action {
+  scale: 0.95;
+  transform-origin: 50% 62%;
+}
+.service-hall[data-stage="working"] .hall-native-work {
+  animation: hall-motion-native-work 2.8s ease-in-out infinite;
+}
+.service-hall[data-stage="idle"] .hall-native-leisure {
+  animation: hall-motion-native-break 4.3s ease-in-out -0.6s infinite;
+}
+
+@keyframes hall-motion-claude-shift {
+  0%,
+  100% {
+    transform: translateY(var(--hall-comfort-drop)) scale(0.93);
+  }
+  9% {
+    transform: translateY(calc(var(--hall-comfort-drop) - 2px)) scale(0.93) rotate(-1.2deg);
+  }
+  16% {
+    transform: translateY(calc(var(--hall-comfort-drop) + 5px)) scale(0.93) rotate(1.5deg);
+  }
+  22% {
+    transform: translateY(calc(var(--hall-comfort-drop) - 1px)) scale(0.93);
+  }
+  33% {
+    transform: translateY(calc(var(--hall-comfort-drop) + 6px)) scale(0.93) rotate(0.7deg);
+  }
+  38%,
+  58% {
+    transform: translateY(var(--hall-comfort-drop)) scale(0.93);
+  }
+  65% {
+    transform: translateY(calc(var(--hall-comfort-drop) + 4px)) scale(0.93) rotate(-0.8deg);
+  }
+  72% {
+    transform: translateY(var(--hall-comfort-drop)) scale(0.93);
+  }
+  84% {
+    transform: translateY(calc(var(--hall-comfort-drop) - 3px)) scale(0.93) rotate(1deg);
+  }
+}
+@keyframes hall-motion-brow-grump {
+  0%,
+  35%,
+  64%,
+  100% {
+    opacity: 0.65;
+    transform: translateY(0);
+  }
+  39%,
+  56% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  67%,
+  81% {
+    opacity: 0.55;
+    transform: translateY(-1px);
+  }
+}
+@keyframes hall-claude-eye-rest {
+  0%,
+  10%,
+  34%,
+  57%,
+  83%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  24%,
+  65%,
+  72% {
+    opacity: 1;
+  }
+}
+@keyframes hall-claude-hand-rest {
+  0%,
+  8%,
+  35%,
+  57%,
+  85%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  14%,
+  28%,
+  64%,
+  78% {
+    opacity: 0.35;
+    transform: translateY(7px);
+  }
+}
+@keyframes hall-motion-sigh-sequence {
+  0%,
+  10%,
+  38%,
+  100% {
+    opacity: 0;
+    transform: translateY(5px) rotate(-4deg);
+  }
+  14%,
+  32% {
+    opacity: 0.85;
+    transform: translateY(-4px) rotate(-4deg);
+  }
+}
+@keyframes hall-motion-sigh-repeat {
+  0%,
+  57%,
+  100% {
+    opacity: 0;
+    transform: translateY(6px) rotate(5deg);
+  }
+  63%,
+  81% {
+    opacity: 0.95;
+    transform: translateY(-3px) rotate(5deg);
+  }
+}
+@keyframes hall-motion-pressure {
+  0%,
+  30%,
+  100% {
+    transform: translateY(var(--hall-comfort-drop)) scale(0.93);
+  }
+  41% {
+    transform: translate(1px, calc(var(--hall-comfort-drop) + 3px)) scale(0.93) rotate(1.25deg);
+  }
+  49% {
+    transform: translate(-1px, calc(var(--hall-comfort-drop) + 2px)) scale(0.93) rotate(-0.5deg);
+  }
+  68% {
+    transform: translateY(calc(var(--hall-comfort-drop) + 2px)) scale(0.93) rotate(1deg);
+  }
+}
+@keyframes hall-motion-ribbon {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  43% {
+    transform: translateX(0.7px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-0.5px) rotate(-2deg);
+  }
+}
+@keyframes hall-motion-mutter {
+  0%,
+  55%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.48;
+  }
+  33% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+@keyframes hall-motion-sweat {
+  0%,
+  25%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0) rotate(-22deg) scale(0.85);
+  }
+  42% {
+    opacity: 1;
+    transform: translateY(-2px) rotate(-22deg) scale(1);
+  }
+  82% {
+    opacity: 0.2;
+    transform: translateY(10px) rotate(-22deg) scale(0.75);
+  }
+}
+@keyframes hall-motion-steam {
+  0% {
+    transform: translate(0, 6px) scale(0.7);
+    opacity: 0;
+  }
+  29% {
+    opacity: 0.64;
+  }
+  100% {
+    transform: translate(4px, -8px) scale(1.35);
+    opacity: 0;
+  }
+}
+@keyframes hall-motion-keys {
+  from {
+    transform: translateY(0) rotate(3deg);
+  }
+  to {
+    transform: translateY(-3px) rotate(-6deg);
+  }
+}
+@keyframes hall-motion-cloudwatch {
+  0%,
+  12%,
+  100% {
+    transform: translateY(var(--hall-comfort-drop)) scale(0.93);
+  }
+  38%,
+  55% {
+    transform: translate(1px, calc(var(--hall-comfort-drop) + 2px)) scale(0.93) rotate(1.8deg);
+  }
+  77% {
+    transform: translateY(calc(var(--hall-comfort-drop) - 2px)) scale(0.93) rotate(-1.1deg);
+  }
+}
+@keyframes hall-motion-cloud {
+  0%,
+  100% {
+    transform: translateY(1px);
+  }
+  47% {
+    transform: translate(3px, -6px) rotate(5deg);
+  }
+  71% {
+    transform: translate(-1px, -4px) rotate(-2deg);
+  }
+}
+@keyframes hall-motion-tassel {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  42% {
+    transform: translateX(1px) rotate(3.5deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+}
+@keyframes hall-motion-starlight {
+  0%,
+  85%,
+  100% {
+    transform: translateY(2px) scale(0.68);
+    opacity: 0.22;
+  }
+  45% {
+    transform: translateY(-4px) scale(1);
+    opacity: 0.9;
+  }
+}
+@keyframes hall-motion-breath {
+  0%,
+  100% {
+    transform: scale(0.95);
+  }
+  42% {
+    transform: translateY(var(--hall-lift)) scale(0.954) rotate(var(--hall-lean));
+  }
+  70% {
+    transform: translateY(-1px) scale(0.95);
+  }
+}
+@keyframes hall-motion-tail {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  46% {
+    transform: rotate(9deg) translateY(-2px);
+  }
+  66% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes hall-motion-blink {
+  0%,
+  69%,
+  72%,
+  94%,
+  97%,
+  100% {
+    opacity: 0;
+  }
+  70%,
+  95% {
+    opacity: 1;
+  }
+}
+@keyframes hall-motion-thought {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-7deg);
+    opacity: 0.56;
+  }
+  45% {
+    transform: translateY(-7px) rotate(5deg);
+    opacity: 0.95;
+  }
+}
+@keyframes hall-motion-native-work {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  44% {
+    transform: translate(-50%, -2px) rotate(-0.65deg);
+  }
+  68% {
+    transform: translate(-50%, 1px);
+  }
+}
+@keyframes hall-motion-native-break {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -3px) rotate(1deg);
+  }
+}
+@media (max-width: 700px) {
+  .hall-motion-claude,
+  .hall-motion-gpt {
+    --hall-comfort-drop: 7px;
+  }
+  .hall-motion-star {
+    font-size: 8px;
+  }
+  .hall-motion-star-second {
+    left: 91%;
+    font-size: 7px;
+  }
+  .hall-motion-reaction {
+    top: 39%;
+    left: 73%;
+  }
+  .hall-motion-reaction > span {
+    font-size: 15px;
+  }
+  .hall-mug-claude {
+    display: grid;
+    top: 446px;
+    right: 3%;
+    width: 13px;
+    height: 15px;
+  }
+  .hall-mug-claude::after {
+    top: 3px;
+    width: 4px;
+    height: 7px;
+    border-width: 1px;
+  }
+  .hall-mug-claude > span {
+    font-size: 8px;
+  }
+  .hall-mug-claude > .hall-motion-steam {
+    top: -11px;
+    left: 3px;
+    width: 3px;
+    height: 8px;
+  }
+  .hall-mug-claude > .hall-motion-steam:nth-child(2) {
+    left: 6px;
+  }
+}
+
+.service-hall[data-motion-paused="true"] *,
+.service-hall[data-motion-paused="true"] *::before,
+.service-hall[data-motion-paused="true"] *::after {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keep the current pose, actual result and controls visible without loops. */
+  .service-hall
+    :is(
+      .hall-motion-body,
+      .hall-motion-cutout,
+      .hall-motion-star,
+      .hall-motion-tail,
+      .hall-motion-lids,
+      .hall-motion-reaction > span,
+      .hall-motion-mutter > i,
+      .hall-motion-claude-brows,
+      .hall-motion-claude-frown,
+      .hall-motion-claude-eye-rest,
+      .hall-station-claude .hall-side-typing,
+      .hall-motion-claude-sigh > span,
+      .hall-motion-steam,
+      .hall-frustration,
+      .hall-sweat,
+      .hall-side-typing > i,
+      .hall-character-deepseek,
+      .hall-character-image,
+      .hall-native-hand,
+      .hall-hand-rig,
+      .hall-rig-arm,
+      .hall-hand-target,
+      .hall-hand-target > i,
+      .hall-receive,
+      .hall-incoming-paper,
+      .hall-typing-hands > i,
+      .hall-native-action,
+      .hall-work-frame,
+      .hall-meal-frame,
+      .hall-work-spark,
+      .hall-idle-note,
+      .hall-monitor-deepseek,
+      .hall-rear-power,
+      .hall-stack,
+      .hall-mug-deepseek,
+      .hall-collect
+    ) {
+    animation: none !important;
+    transition: none !important;
+  }
+  .service-hall[data-stage="placing"] .hall-incoming-paper {
+    opacity: 1;
+    transform: translate(20px, 70px) rotate(75deg) scale(0.75);
+  }
+  .service-hall[data-stage="delivering"] .hall-stack {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+  .service-hall[data-stage="welcome"] .hall-rig-right {
+    transform: scaleX(-1) rotate(-40deg);
+  }
+  .service-hall[data-stage="working"] .hall-computer-activity i:nth-child(2n) {
+    height: 9px;
+  }
+}
+
+/* Phones: one coworker per screen. The station row becomes a swipeable track so the
+   hall never squeezes three characters into thumbnail columns. */
+@media (max-width: 700px) {
+  .hall-stations {
+    display: flex;
+    inset: 0 0;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+  .hall-stations::-webkit-scrollbar {
+    display: none;
+  }
+  .hall-station {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+  }
+  /* Side booths get a full slide of their own, so re-centre their cast and props. */
+  .hall-station-claude,
+  .hall-station-gpt {
+    overflow: hidden;
+  }
+  .hall-station-claude .hall-character-claude,
+  .hall-station-gpt .hall-character-gpt {
+    top: 207px;
+    left: 50%;
+    width: 287px;
+    height: 528px;
+  }
+  .hall-station-claude .hall-side-bubble,
+  .hall-station-gpt .hall-side-bubble {
+    top: 150px;
+    left: 50%;
+    right: auto;
+    width: 236px;
+    font-size: 10px;
+  }
+  .hall-station-claude .hall-bay-label,
+  .hall-station-gpt .hall-bay-label {
+    top: 84px;
+    left: 50%;
+  }
+  .hall-station-claude .hall-monitor,
+  .hall-station-gpt .hall-monitor {
+    top: 462px;
+    left: 5%;
+    width: 122px;
+    height: 88px;
+    padding: 4px 4px 12px;
+    border-radius: 7px;
+  }
+  .hall-station-gpt .hall-monitor {
+    left: auto;
+    right: 5%;
+  }
+  .hall-station-claude .hall-side-keyboard,
+  .hall-station-gpt .hall-side-keyboard {
+    top: 494px;
+    left: 7%;
+    width: 104px;
+    height: 16px;
+  }
+  .hall-station-gpt .hall-side-keyboard {
+    left: auto;
+    right: 7%;
+  }
+  .hall-station-claude .hall-mug,
+  .hall-station-gpt .hall-mug {
+    top: 462px;
+  }
+  .hall-station-claude .hall-frustration {
+    top: 30px;
+    right: 34px;
+  }
+}

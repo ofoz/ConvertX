@@ -1,41 +1,43 @@
-import { version } from "../../package.json";
+import { assetUrl } from "../helpers/assets";
+import { BRANDING } from "../helpers/env";
 
 export const BaseHtml = ({
   children,
-  title = "ConvertX",
+  branding = BRANDING,
+  title = branding,
   webroot = "",
 }: {
   children: JSX.Element;
   title?: string;
   webroot?: string;
+  branding?: string;
 }) => (
-  <html lang="en">
+  <html lang="zh-CN">
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="color-scheme" content="light" />
+      <meta name="theme-color" content="#edf5ff" />
       <meta name="webroot" content={webroot} />
+      <meta name="branding" content={branding} />
+      <meta name="application-name" content={branding} />
       <title safe>{title}</title>
-      <link rel="stylesheet" href={`${webroot}/generated.css`} />
+      <link rel="stylesheet" href={assetUrl(webroot, "generated.css")} />
       <link rel="apple-touch-icon" sizes="180x180" href={`${webroot}/apple-touch-icon.png`} />
       <link rel="icon" type="image/png" sizes="32x32" href={`${webroot}/favicon-32x32.png`} />
       <link rel="icon" type="image/png" sizes="16x16" href={`${webroot}/favicon-16x16.png`} />
-      <link rel="manifest" href={`${webroot}/site.webmanifest`} />
+      <link rel="manifest" href={assetUrl(webroot, "site.webmanifest")} />
     </head>
-    <body class={`flex min-h-screen w-full flex-col bg-neutral-900 text-neutral-200`}>
+    <body class="app-body">
+      <a class="skip-link" href="#main-content">
+        跳转到主要内容
+      </a>
       {children}
-      <footer class="w-full">
-        <div class="p-4 text-center text-sm text-neutral-500">
-          <span>Powered by </span>
-          <a
-            href="https://github.com/C4illin/ConvertX"
-            class={`
-              text-neutral-400
-              hover:text-accent-500
-            `}
-          >
-            ConvertX{" "}
-          </a>
-          <span safe>v{version || ""}</span>
+      <footer class="app-footer">
+        <div class="app-container app-footer-inner">
+          <span>
+            非官方同人界面 · <a href={`${webroot}/characters/ATTRIBUTION.md`}>角色与素材说明</a>
+          </span>
         </div>
       </footer>
     </body>

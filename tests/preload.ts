@@ -9,6 +9,9 @@ const testRoot = mkdtempSync(join(tmpdir(), "convertx-tests-"));
 // Tests must never touch ./data/mydb.sqlite or a DB_PATH from the developer's shell.
 process.env.DB_PATH = join(testRoot, "test.sqlite");
 process.env.CONVERTX_TEST_ROOT = testRoot;
+// Keep cumulative quota regressions small and independent of host configuration.
+process.env.MAX_JOB_UPLOAD_SIZE_MB = "1";
+process.env.MAX_JOB_OUTPUT_SIZE_MB = "1";
 
 // Settings from the developer's shell or a .env file (which Bun loads automatically) must
 // not change what the tests see, e.g. WEBROOT would move every page. src/helpers/env.ts
@@ -43,6 +46,9 @@ mock.module("../src/index", () => ({
 }));
 
 // a preload's afterAll runs once after all test files (and once per file with --isolate)
-afterAll(() => {
+afterAll(async () => {
+  // Windows cannot remove an open SQLite database file.
+  const { default: db } = await import("../src/db/db");
+  db.close();
   rmSync(testRoot, { recursive: true, force: true });
 });

@@ -1,17 +1,10 @@
 import { Elysia, t } from "elysia";
 
-import { BaseHtml } from "../components/base";
-import { Header } from "../components/header";
+import { AuthLayout } from "../components/authLayout";
 import db from "../db/db";
 import { User } from "../db/types";
-import {
-  ACCOUNT_REGISTRATION,
-  ALLOW_UNAUTHENTICATED,
-  BRANDING,
-  HIDE_HISTORY,
-  HTTP_ALLOWED,
-  WEBROOT,
-} from "../helpers/env";
+import { authPageHref, normalizeAuthReturn } from "../helpers/authReturn";
+import { ACCOUNT_REGISTRATION, BRANDING, HTTP_ALLOWED, WEBROOT } from "../helpers/env";
 import { userService } from "../services/user";
 
 export { userService } from "../services/user";
@@ -19,284 +12,273 @@ export { userService } from "../services/user";
 export let FIRST_RUN = db.query("SELECT * FROM users").get() === null || false;
 
 function ErrorBanner({ message }: { message: string }) {
+  const displayMessage =
+    message === "Invalid credentials."
+      ? "邮箱或密码不正确，请检查后重试。"
+      : message === "Email already in use."
+        ? "此邮箱已注册，请更换邮箱后重试。"
+        : message;
   return (
-    <div
-      class="rounded-sm border border-red-500/40 bg-red-500/10 px-3 py-2 text-red-300"
-      role="alert"
-    >
-      <p safe>{message}</p>
+    <div class="sx-form-error" id="sx-form-error" role="alert">
+      <p safe>{displayMessage}</p>
     </div>
   );
 }
 
-function LoginPage({ error, email = "" }: { error?: string; email?: string }) {
+function LoginPage({
+  error,
+  email = "",
+  returnTo,
+}: {
+  error?: string;
+  email?: string;
+  returnTo?: string | undefined;
+}) {
   return (
-    <BaseHtml webroot={WEBROOT} title="ConvertX | Login">
-      <>
-        <Header
-          webroot={WEBROOT}
-          branding={BRANDING}
-          accountRegistration={ACCOUNT_REGISTRATION}
-          allowUnauthenticated={ALLOW_UNAUTHENTICATED}
-          hideHistory={HIDE_HISTORY}
-        />
-        <main
-          class={`
-            w-full flex-1 px-2
-            sm:px-4
-          `}
-        >
-          <article class="article">
-            <form method="post" class="flex flex-col gap-4">
-              {error ? <ErrorBanner message={error} /> : null}
-              <fieldset class="mb-4 flex flex-col gap-4">
-                <label class="flex flex-col gap-1">
-                  Email
-                  <input
-                    type="email"
-                    name="email"
-                    class="rounded-sm bg-neutral-800 p-3"
-                    placeholder="Email"
-                    autocomplete="email"
-                    value={email}
-                    autofocus
-                    required
-                  />
-                </label>
-                <label class="flex flex-col gap-1">
-                  Password
-                  <input
-                    type="password"
-                    name="password"
-                    class="rounded-sm bg-neutral-800 p-3"
-                    placeholder="Password"
-                    autocomplete="current-password"
-                    required
-                  />
-                </label>
-              </fieldset>
-              <div class="flex flex-row gap-4">
-                {ACCOUNT_REGISTRATION ? (
-                  <a
-                    href={`${WEBROOT}/register`}
-                    role="button"
-                    class="w-full btn-secondary text-center"
-                  >
-                    Register
-                  </a>
-                ) : null}
-                <input type="submit" value="Login" class="w-full btn-primary" />
-              </div>
-            </form>
-          </article>
-        </main>
-      </>
-    </BaseHtml>
+    <AuthLayout title="登录" scene="login">
+      <section class="sx-auth-card">
+        <div class="sx-auth-heading">
+          <span class="eyebrow">欢迎回来</span>
+          <h1>登录账号</h1>
+          <p class="muted">登录后继续管理你的转换任务。</p>
+        </div>
+        <form method="post" class="sx-form">
+          {returnTo ? <input type="hidden" name="returnTo" value={returnTo} /> : null}
+          {error ? <ErrorBanner message={error} /> : null}
+          <label class="sx-labeled-field">
+            <span>邮箱地址</span>
+            <input
+              type="email"
+              name="email"
+              placeholder="name@example.com"
+              autocomplete="email"
+              value={email}
+              required
+              class="form-field"
+            />
+          </label>
+          <label class="sx-labeled-field">
+            <span>密码</span>
+            <input
+              type="password"
+              name="password"
+              placeholder="输入密码"
+              autocomplete="current-password"
+              required
+              class="form-field"
+            />
+          </label>
+          <button type="submit" class="sx-submit btn-primary">
+            登录
+          </button>
+          {ACCOUNT_REGISTRATION ? (
+            <p class="sx-auth-switch muted">
+              还没有账号？ <a href={authPageHref(WEBROOT, "register", returnTo)}>创建账号</a>
+            </p>
+          ) : null}
+        </form>
+      </section>
+    </AuthLayout>
   );
 }
 
 function AccountPage({ email, error }: { email: string; error?: string }) {
   return (
-    <BaseHtml webroot={WEBROOT} title="ConvertX | Account">
-      <>
-        <Header
-          webroot={WEBROOT}
-          branding={BRANDING}
-          accountRegistration={ACCOUNT_REGISTRATION}
-          allowUnauthenticated={ALLOW_UNAUTHENTICATED}
-          hideHistory={HIDE_HISTORY}
-          loggedIn
-        />
-        <main
-          class={`
-            w-full flex-1 px-2
-            sm:px-4
-          `}
+    <AuthLayout title="账号设置" scene="account">
+      <section class="sx-auth-card sx-account-card">
+        <div class="sx-auth-heading">
+          <span class="eyebrow">个人设置</span>
+          <h1>账号设置</h1>
+          <p class="muted">更新邮箱或设置新密码。更改前请验证当前密码。</p>
+        </div>
+        <form method="post" class="sx-form">
+          {error ? <ErrorBanner message={error} /> : null}
+          <label class="sx-labeled-field">
+            <span>邮箱地址</span>
+            <input
+              type="email"
+              name="email"
+              placeholder="name@example.com"
+              autocomplete="email"
+              value={email}
+              required
+              class="form-field"
+            />
+          </label>
+          <label class="sx-labeled-field">
+            <span>
+              新密码 <small>（留空则保持不变）</small>
+            </span>
+            <input
+              type="password"
+              name="newPassword"
+              placeholder="输入新密码"
+              autocomplete="new-password"
+              class="form-field"
+            />
+          </label>
+          <label class="sx-labeled-field">
+            <span>当前密码</span>
+            <input
+              type="password"
+              name="password"
+              placeholder="验证当前密码"
+              autocomplete="current-password"
+              required
+              class="form-field"
+            />
+          </label>
+          <button type="submit" class="sx-submit btn-primary">
+            保存更改
+          </button>
+        </form>
+      </section>
+    </AuthLayout>
+  );
+}
+
+const PASSWORD_CONFIRMATION_MESSAGE = "两次输入的密码不一致，请重新确认。";
+
+function RegistrationPage({
+  setup = false,
+  email = "",
+  error,
+  returnTo,
+}: {
+  setup?: boolean;
+  email?: string;
+  error?: string;
+  returnTo?: string | undefined;
+}) {
+  return (
+    <AuthLayout title={setup ? "初始设置" : "注册"} scene={setup ? "setup" : "register"}>
+      <section class={setup ? "sx-auth-card sx-setup-card" : "sx-auth-card"}>
+        <div class="sx-auth-heading">
+          <span class="eyebrow">{setup ? "初次使用" : "新用户"}</span>
+          {setup ? <h1 safe>{`欢迎使用${BRANDING}`}</h1> : <h1>创建账号</h1>}
+          <p class="muted">
+            {setup
+              ? "先创建管理员账号，即可开始管理你的文件转换。"
+              : "创建账号以保存并查看你的转换任务。"}
+          </p>
+        </div>
+        <form
+          method="post"
+          action={`${WEBROOT}/register`}
+          class="sx-form"
+          data-register-form
+          data-password-mismatch-message={PASSWORD_CONFIRMATION_MESSAGE}
         >
-          <article class="article">
-            <form method="post" class="flex flex-col gap-4">
-              {error ? <ErrorBanner message={error} /> : null}
-              <fieldset class="mb-4 flex flex-col gap-4">
-                <label class="flex flex-col gap-1">
-                  Email
-                  <input
-                    type="email"
-                    name="email"
-                    class="rounded-sm bg-neutral-800 p-3"
-                    placeholder="Email"
-                    autocomplete="email"
-                    value={email}
-                    required
-                  />
-                </label>
-                <label class="flex flex-col gap-1">
-                  Password (leave blank for unchanged)
-                  <input
-                    type="password"
-                    name="newPassword"
-                    class="rounded-sm bg-neutral-800 p-3"
-                    placeholder="Password"
-                    autocomplete="new-password"
-                  />
-                </label>
-                <label class="flex flex-col gap-1">
-                  Current Password
-                  <input
-                    type="password"
-                    name="password"
-                    class="rounded-sm bg-neutral-800 p-3"
-                    placeholder="Password"
-                    autocomplete="current-password"
-                    required
-                  />
-                </label>
-              </fieldset>
-              <div role="group">
-                <input type="submit" value="Update" class="w-full btn-primary" />
-              </div>
-            </form>
-          </article>
-        </main>
-      </>
-    </BaseHtml>
+          {returnTo ? <input type="hidden" name="returnTo" value={returnTo} /> : null}
+          {error ? <ErrorBanner message={error} /> : null}
+          <label class="sx-labeled-field">
+            <span>邮箱地址</span>
+            <input
+              type="email"
+              name="email"
+              placeholder="name@example.com"
+              autocomplete="email"
+              value={email}
+              required
+              class="form-field"
+            />
+          </label>
+          <label class="sx-labeled-field">
+            <span>密码</span>
+            <input
+              type="password"
+              name="password"
+              placeholder="设置密码"
+              autocomplete="new-password"
+              required
+              class="form-field"
+            />
+          </label>
+          <label class="sx-labeled-field">
+            <span>确认密码</span>
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="再次输入密码"
+              autocomplete="new-password"
+              aria-describedby="password-confirmation-error"
+              required
+              class="form-field"
+            />
+            <span
+              id="password-confirmation-error"
+              class="sx-confirmation-error"
+              role="status"
+              aria-live="polite"
+              hidden
+            />
+          </label>
+          <button type="submit" class="sx-submit btn-primary">
+            {setup ? "创建账号并继续" : "注册"}
+          </button>
+          {!setup && (
+            <p class="sx-auth-switch muted">
+              已经有账号？ <a href={authPageHref(WEBROOT, "login", returnTo)}>返回登录</a>
+            </p>
+          )}
+        </form>
+        {setup && <p class="sx-setup-note muted">账号信息仅用于保护你的转换任务。</p>}
+      </section>
+    </AuthLayout>
   );
 }
 
 export const user = new Elysia()
   .use(userService)
-  .get("/setup", ({ redirect }) => {
-    if (!FIRST_RUN) {
-      return redirect(`${WEBROOT}/login`, 302);
-    }
-
-    return (
-      <BaseHtml title="ConvertX | Setup" webroot={WEBROOT}>
-        <main
-          class={`
-            mx-auto w-full max-w-4xl flex-1 px-2
-            sm:px-4
-          `}
-        >
-          <h1 class="my-8 text-3xl">Welcome to ConvertX!</h1>
-          <article class="article p-0">
-            <header class="w-full bg-neutral-800 p-4">Create your account</header>
-            <form method="post" action={`${WEBROOT}/register`} class="p-4">
-              <fieldset class="mb-4 flex flex-col gap-4">
-                <label class="flex flex-col gap-1">
-                  Email
-                  <input
-                    type="email"
-                    name="email"
-                    class="rounded-sm bg-neutral-800 p-3"
-                    placeholder="Email"
-                    autocomplete="email"
-                    required
-                  />
-                </label>
-                <label class="flex flex-col gap-1">
-                  Password
-                  <input
-                    type="password"
-                    name="password"
-                    class="rounded-sm bg-neutral-800 p-3"
-                    placeholder="Password"
-                    autocomplete="current-password"
-                    required
-                  />
-                </label>
-              </fieldset>
-              <input type="submit" value="Create account" class="btn-primary" />
-            </form>
-            <footer class="p-4">
-              Report any issues on{" "}
-              <a
-                class={`
-                  text-accent-500 underline
-                  hover:text-accent-400
-                `}
-                href="https://github.com/C4illin/ConvertX"
-              >
-                GitHub
-              </a>
-              .
-            </footer>
-          </article>
-        </main>
-      </BaseHtml>
-    );
+  .get("/setup", ({ query, redirect }) => {
+    const returnTo = normalizeAuthReturn(query.next, WEBROOT);
+    if (!FIRST_RUN) return redirect(authPageHref(WEBROOT, "login", returnTo), 302);
+    return <RegistrationPage setup returnTo={returnTo} />;
   })
-  .get("/register", ({ redirect }) => {
-    if (!ACCOUNT_REGISTRATION) {
-      return redirect(`${WEBROOT}/login`, 302);
-    }
-
-    return (
-      <BaseHtml webroot={WEBROOT} title="ConvertX | Register">
-        <>
-          <Header
-            webroot={WEBROOT}
-            branding={BRANDING}
-            accountRegistration={ACCOUNT_REGISTRATION}
-            allowUnauthenticated={ALLOW_UNAUTHENTICATED}
-            hideHistory={HIDE_HISTORY}
-          />
-          <main
-            class={`
-              w-full flex-1 px-2
-              sm:px-4
-            `}
-          >
-            <article class="article">
-              <form method="post" class="flex flex-col gap-4">
-                <fieldset class="mb-4 flex flex-col gap-4">
-                  <label class="flex flex-col gap-1">
-                    Email
-                    <input
-                      type="email"
-                      name="email"
-                      class="rounded-sm bg-neutral-800 p-3"
-                      placeholder="Email"
-                      autocomplete="email"
-                      required
-                    />
-                  </label>
-                  <label class="flex flex-col gap-1">
-                    Password
-                    <input
-                      type="password"
-                      name="password"
-                      class="rounded-sm bg-neutral-800 p-3"
-                      placeholder="Password"
-                      autocomplete="current-password"
-                      required
-                    />
-                  </label>
-                </fieldset>
-                <input type="submit" value="Register" class="w-full btn-primary" />
-              </form>
-            </article>
-          </main>
-        </>
-      </BaseHtml>
-    );
+  .get("/register", ({ query, redirect }) => {
+    const returnTo = normalizeAuthReturn(query.next, WEBROOT);
+    if (!ACCOUNT_REGISTRATION) return redirect(authPageHref(WEBROOT, "login", returnTo), 302);
+    return <RegistrationPage returnTo={returnTo} />;
   })
   .post(
     "/register",
-    async ({ body: { email, password }, set, redirect, jwt, cookie: { auth } }) => {
+    async ({
+      body: { email, password, confirmPassword, returnTo: submittedReturnTo },
+      set,
+      redirect,
+      jwt,
+      cookie: { auth },
+    }) => {
+      const returnTo = normalizeAuthReturn(submittedReturnTo, WEBROOT);
       if (!ACCOUNT_REGISTRATION && !FIRST_RUN) {
-        return redirect(`${WEBROOT}/login`, 302);
+        return redirect(authPageHref(WEBROOT, "login", returnTo), 302);
       }
 
-      if (FIRST_RUN) {
-        FIRST_RUN = false;
+      if (password !== confirmPassword) {
+        set.status = 400;
+        return (
+          <RegistrationPage
+            setup={FIRST_RUN}
+            email={email}
+            error={PASSWORD_CONFIRMATION_MESSAGE}
+            returnTo={returnTo}
+          />
+        );
       }
 
       const existingUser = await db.query("SELECT * FROM users WHERE email = ?").get(email);
       if (existingUser) {
         set.status = 400;
-        return {
-          message: "Email already in use.",
-        };
+        if (returnTo)
+          return (
+            <RegistrationPage
+              setup={FIRST_RUN}
+              email={email}
+              error="Email already in use."
+              returnTo={returnTo}
+            />
+          );
+        return { message: "Email already in use." };
       }
       const savedPassword = await Bun.password.hash(password);
 
@@ -310,6 +292,8 @@ export const user = new Elysia()
           message: "Failed to create user.",
         };
       }
+
+      FIRST_RUN = false;
 
       const accessToken = await jwt.sign({
         id: String(user.id),
@@ -331,47 +315,55 @@ export const user = new Elysia()
         sameSite: "strict",
       });
 
-      return redirect(`${WEBROOT}/`, 302);
+      return redirect(returnTo ?? `${WEBROOT}/`, 302);
     },
-    { body: "signIn" },
+    {
+      body: t.Object({
+        email: t.String(),
+        password: t.String({ minLength: 1 }),
+        confirmPassword: t.String({ minLength: 1 }),
+        returnTo: t.Optional(t.String()),
+      }),
+    },
   )
   .get(
     "/login",
-    async ({ jwt, redirect, cookie: { auth } }) => {
+    async ({ jwt, query, redirect, cookie: { auth } }) => {
+      const returnTo = normalizeAuthReturn(query.next, WEBROOT);
       if (FIRST_RUN) {
-        return redirect(`${WEBROOT}/setup`, 302);
+        return redirect(authPageHref(WEBROOT, "setup", returnTo), 302);
       }
 
-      // if already logged in, redirect to home
       if (auth?.value) {
         const user = await jwt.verify(auth.value);
 
         if (user) {
-          return redirect(`${WEBROOT}/`, 302);
+          return redirect(returnTo ?? `${WEBROOT}/`, 302);
         }
 
         auth.remove();
       }
 
-      return <LoginPage />;
+      return <LoginPage returnTo={returnTo} />;
     },
     { body: "signIn", cookie: "optionalSession" },
   )
   .post(
     "/login",
     async function handler({ body, set, redirect, jwt, cookie: { auth } }) {
+      const returnTo = normalizeAuthReturn(body.returnTo, WEBROOT);
       const existingUser = db.query("SELECT * FROM users WHERE email = ?").as(User).get(body.email);
 
       if (!existingUser) {
         set.status = 403;
-        return <LoginPage error="Invalid credentials." email={body.email} />;
+        return <LoginPage error="Invalid credentials." email={body.email} returnTo={returnTo} />;
       }
 
       const validPassword = await Bun.password.verify(body.password, existingUser.password);
 
       if (!validPassword) {
         set.status = 403;
-        return <LoginPage error="Invalid credentials." email={body.email} />;
+        return <LoginPage error="Invalid credentials." email={body.email} returnTo={returnTo} />;
       }
 
       const accessToken = await jwt.sign({
@@ -394,7 +386,7 @@ export const user = new Elysia()
         sameSite: "strict",
       });
 
-      return redirect(`${WEBROOT}/`, 302);
+      return redirect(returnTo ?? `${WEBROOT}/`, 302);
     },
     { body: "signIn" },
   )
@@ -403,20 +395,20 @@ export const user = new Elysia()
       auth.remove();
     }
 
-    return redirect(`${WEBROOT}/login`, 302);
+    return redirect(`${WEBROOT}/`, 302);
   })
   .post("/logoff", ({ redirect, cookie: { auth } }) => {
     if (auth?.value) {
       auth.remove();
     }
 
-    return redirect(`${WEBROOT}/login`, 302);
+    return redirect(`${WEBROOT}/`, 302);
   })
   .get(
     "/account",
     async ({ user, redirect }) => {
       if (!user) {
-        return redirect(`${WEBROOT}/`, 302);
+        return redirect(`${WEBROOT}/login`, 302);
       }
 
       const userData = db.query("SELECT * FROM users WHERE id = ?").as(User).get(user.id);

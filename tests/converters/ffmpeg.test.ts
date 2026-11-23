@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeEach, expect, test } from "bun:test";
 import type { ExecFileOptions } from "node:child_process";
 
 import { convert } from "../../src/converters/ffmpeg";
+import { resourceLimits } from "../../src/helpers/resourceLimits";
 import { captureConsole } from "./helpers/converters";
 
 let calls: string[][] = [];
@@ -15,7 +16,18 @@ function mockExecFile(
   callback: (err: Error | null, stdout: string, stderr: string) => void,
 ) {
   commands.push(cmd);
-  calls.push(args);
+  // Preserve the existing assertions on media options after checking the resource options in order.
+  const threads = String(resourceLimits.ffmpegThreads);
+  expect(args.slice(0, 4)).toEqual([
+    "-filter_threads",
+    threads,
+    "-filter_complex_threads",
+    threads,
+  ]);
+  const input = args.indexOf("-i");
+  expect(args.slice(input - 2, input)).toEqual(["-threads", threads]);
+  expect(args.slice(-3, -1)).toEqual(["-threads", threads]);
+  calls.push([...args.slice(4, input - 2), ...args.slice(input, -3), args.at(-1)!]);
   lastOptions = options;
   if (args.includes("fail.mov")) {
     callback(new Error("mock failure"), "", "Fake stderr: fail");

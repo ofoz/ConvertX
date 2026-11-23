@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test";
 
+import { assetUrl } from "../../src/helpers/assets";
 import { buildDownloadUrl } from "../../src/helpers/buildDownloadUrl";
-import { createJob, createUser, request, resetEnv, setCookie, setEnv } from "./helpers/app";
+import { createJob, createUser, db, request, resetEnv, setCookie, setEnv } from "./helpers/app";
 
 afterEach(() => {
   resetEnv();
@@ -53,9 +54,13 @@ describe.each([
     expect(await response.json()).toEqual({ message: "Job not found." });
   });
 
-  test("lists the converted files with view and download links", async () => {
+  test("lists converted files with Chinese preview and download actions", async () => {
     const user = await createUser();
-    const job = createJob(user.id, { numFiles: 2, files: [done("a"), done("my file #1")] });
+    const job = createJob(user.id, {
+      numFiles: 2,
+      status: "completed",
+      files: [done("a"), done("my file #1")],
+    });
 
     const body = await (
       await request(`${route}/${job}`, { method, cookies: { auth: user.token } })
@@ -64,6 +69,9 @@ describe.each([
     expect(body).toContain(`href="/download/${user.id}/${job}/a.csv"`);
     expect(body).toContain(`href="/download/${user.id}/${job}/my%20file%20%231.csv"`);
     expect(body).toContain('download="my file #1.csv"');
+    expect(body).toContain("转换完成");
+    expect(body).toContain("预览");
+    expect(body).toContain("批量下载");
   });
 
   test.each(["Failed, check logs", "File type not supported"])(
@@ -72,6 +80,7 @@ describe.each([
       const user = await createUser();
       const job = createJob(user.id, {
         numFiles: 1,
+        status: "completed",
         files: [{ file_name: "a.xyz", output_file_name: "a.pdf", status }],
       });
 
@@ -79,8 +88,11 @@ describe.each([
         await request(`${route}/${job}`, { method, cookies: { auth: user.token } })
       ).text();
 
-      expect(body).toContain("Unavailable");
-      expect(body).toContain(`<td>${status}</td>`);
+      expect(body).toContain("a.xyz");
+      expect(body).toContain("无法下载");
+      expect(body).toContain(
+        status === "Failed, check logs" ? "转换失败，请查看日志" : "不支持此文件类型",
+      );
       expect(body).not.toContain("/download/");
     },
   );
@@ -89,8 +101,9 @@ describe.each([
     const user = await createUser();
     const name = '"><img src=x onerror=alert(1)>.csv';
     const job = createJob(user.id, {
+      status: "completed",
       numFiles: 1,
-      files: [{ file_name: "x", output_file_name: name, status: "<b>Done</b>" }],
+      files: [{ file_name: name, output_file_name: "safe.csv", status: "<b>Done</b>" }],
     });
 
     const body = await (
@@ -98,10 +111,12 @@ describe.each([
     ).text();
 
     // neither the text nor the download attribute can be broken out of
-    expect(body).not.toContain('"><img');
+    expect(body).not.toContain('title=""><img');
+    expect(body).toContain('title="&#34;><img');
     expect(body).not.toContain("<b>Done</b>");
+    expect(body).toContain("状态未知");
     expect(body).toContain("&quot;&gt;&lt;img src=x onerror=alert(1)&gt;.csv");
-    expect(body).toContain("&lt;b&gt;Done&lt;/b&gt;");
+    expect(body).toContain("状态未知");
   });
 
   test("disables delete and tar download while files are still converting", async () => {
@@ -112,20 +127,30 @@ describe.each([
       await request(`${route}/${job}`, { method, cookies: { auth: user.token } })
     ).text();
 
-    expect(body.match(/aria-busy="true"/g)).toHaveLength(2);
-    expect(body).toMatch(/<progress max="2"(?! value)/);
+    expect(body).toContain('data-state="running"');
+    expect(body).toContain('aria-busy="true"');
+    expect(body).toMatch(/<progress max="2" value="1"/);
+    expect(body).not.toContain(`action="/delete/${job}"`);
+    expect(body).not.toContain(`href="/archive/${job}"`);
   });
 
   test("enables delete and tar download once every file is converted", async () => {
     const user = await createUser();
-    const job = createJob(user.id, { numFiles: 2, files: [done("a"), done("b")] });
+    const job = createJob(user.id, {
+      numFiles: 2,
+      status: "completed",
+      files: [done("a"), done("b")],
+    });
 
     const body = await (
       await request(`${route}/${job}`, { method, cookies: { auth: user.token } })
     ).text();
 
     expect(body).not.toContain('aria-busy="true"');
+    expect(body).toContain('data-state="success"');
     expect(body).toContain('<progress max="2" value="2"');
+    expect(body).toContain("再转换一批");
+    expect(body).toContain("批量下载");
     expect(body).toContain(`action="/delete/${job}"`);
     expect(body).toContain(`href="/archive/${job}"`);
   });
@@ -133,7 +158,7 @@ describe.each([
   test("prefixes all links with WEBROOT", async () => {
     setEnv({ WEBROOT: "/convertx" });
     const user = await createUser();
-    const job = createJob(user.id, { numFiles: 1, files: [done("a")] });
+    const job = createJob(user.id, { numFiles: 1, status: "completed", files: [done("a")] });
 
     const body = await (
       await request(`${route}/${job}`, { method, cookies: { auth: user.token } })
@@ -173,6 +198,46 @@ describe.each([
 });
 
 describe("GET /results/:jobId", () => {
+  test("uses job status and unique input files instead of output-row count", async () => {
+    const user = await createUser();
+    const job = createJob(user.id, {
+      numFiles: 1,
+      status: "pending",
+      files: [
+        done("book"),
+        { file_name: "book.vcf", output_file_name: "book-1.csv", status: "Done" },
+      ],
+    });
+
+    const body = await (await request(`/results/${job}`, { cookies: { auth: user.token } })).text();
+
+    expect(body).toContain('data-state="running"');
+    expect(body).toContain('data-announcement="正在转换。1 / 1 个源文件，成功 1，失败 0。"');
+    expect(body).toContain(`href="/download/${user.id}/${job}/book-1.csv"`);
+    expect(body).not.toContain(`action="/delete/${job}"`);
+  });
+
+  test("shows partial failures while keeping successful files downloadable", async () => {
+    const user = await createUser();
+    const job = createJob(user.id, {
+      numFiles: 2,
+      status: "completed",
+      files: [
+        done("ok"),
+        { file_name: "bad.vcf", output_file_name: "bad.csv", status: "Failed, check logs" },
+      ],
+    });
+
+    const body = await (await request(`/results/${job}`, { cookies: { auth: user.token } })).text();
+
+    expect(body).toContain('data-state="partial"');
+    expect(body).toContain("部分文件转换失败");
+    expect(body).toContain('href="/download/');
+    expect(body).toContain("无法下载");
+    expect(body).toContain(`action="/delete/${job}"`);
+    expect(body).not.toContain(`href="/archive/${job}"`);
+  });
+
   test("renders a full page with the results script", async () => {
     const user = await createUser();
     const job = createJob(user.id);
@@ -180,12 +245,69 @@ describe("GET /results/:jobId", () => {
     const body = await (await request(`/results/${job}`, { cookies: { auth: user.token } })).text();
 
     expect(body).toStartWith("<!doctype html>");
-    expect(body).toContain("<title>ConvertX | Result</title>");
-    expect(body).toContain('<script src="/results.js" defer');
+    expect(body).toContain("<title>大肥鱼格式工坊 | 转换结果</title>");
+    expect(body).toContain(`<script src="${assetUrl("", "results.js")}" defer`);
+    expect(body).toContain('data-progress-url="/progress/');
   });
 });
 
 describe("POST /progress/:jobId", () => {
+  test("uses a private ETag and returns 304 only to the authorized owner", async () => {
+    const owner = await createUser();
+    const other = await createUser();
+    const job = createJob(owner.id, { numFiles: 1, status: "pending" });
+    const first = await request(`/progress/${job}`, {
+      method: "POST",
+      cookies: { auth: owner.token },
+    });
+    const etag = first.headers.get("etag");
+    expect(first.status).toBe(200);
+    expect(first.headers.get("cache-control")).toBe("private, no-cache");
+    expect(etag).toBeTruthy();
+    const unchanged = await request(`/progress/${job}`, {
+      method: "POST",
+      cookies: { auth: owner.token },
+      headers: { "if-none-match": etag! },
+    });
+    expect(unchanged.status).toBe(304);
+    expect(await unchanged.text()).toBe("");
+    expect(
+      (await request(`/progress/${job}`, { method: "POST", headers: { "if-none-match": etag! } }))
+        .status,
+    ).toBe(401);
+    expect(
+      (
+        await request(`/progress/${job}`, {
+          method: "POST",
+          cookies: { auth: other.token },
+          headers: { "if-none-match": etag! },
+        })
+      ).status,
+    ).toBe(404);
+  });
+
+  test("updates the ETag when file rows change and retains latest result links", async () => {
+    const user = await createUser();
+    const job = createJob(user.id, { numFiles: 1, status: "pending" });
+    const first = await request(`/progress/${job}`, {
+      method: "POST",
+      cookies: { auth: user.token },
+    });
+    const etag = first.headers.get("etag")!;
+    const file = { file_name: "new.vcf", output_file_name: "new.csv", status: "Done" };
+    db.query(
+      "INSERT INTO file_names (job_id,file_name,output_file_name,status) VALUES (?,?,?,?)",
+    ).run(job, file.file_name, file.output_file_name, file.status);
+    const next = await request(`/progress/${job}`, {
+      method: "POST",
+      cookies: { auth: user.token },
+      headers: { "if-none-match": etag },
+    });
+    expect(next.status).toBe(200);
+    expect(next.headers.get("etag")).not.toBe(etag);
+    expect(await next.text()).toContain(`href="/download/${user.id}/${job}/new.csv"`);
+  });
+
   test("renders only the results fragment for polling", async () => {
     const user = await createUser();
     const job = createJob(user.id);
@@ -194,7 +316,7 @@ describe("POST /progress/:jobId", () => {
       await request(`/progress/${job}`, { method: "POST", cookies: { auth: user.token } })
     ).text();
 
-    expect(body).toStartWith('<article class="article">');
+    expect(body).toStartWith('<article id="sx-results" class="sx-result-stack"');
     expect(body).not.toContain("<html");
   });
 });

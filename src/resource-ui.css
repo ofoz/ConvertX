@@ -1,0 +1,17 @@
+.business-upload-limits {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+/* Keep animation layers inside their existing room; no change to hit areas. */
+.hall-room {
+  contain: layout paint;
+}
+@supports (content-visibility: auto) {
+  .business-page .cx-library {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 720px;
+  }
+}

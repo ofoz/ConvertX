@@ -12,7 +12,8 @@ export const AUTO_DELETE_EVERY_N_HOURS = process.env.AUTO_DELETE_EVERY_N_HOURS
 
 export const HIDE_HISTORY = process.env.HIDE_HISTORY?.toLowerCase() === "true" || false;
 
-export const BRANDING = process.env.BRANDING ?? "ConvertX";
+export const DEFAULT_BRANDING = "大肥鱼格式工坊";
+export const BRANDING = process.env.BRANDING ?? DEFAULT_BRANDING;
 
 export const WEBROOT = process.env.WEBROOT ?? "";
 

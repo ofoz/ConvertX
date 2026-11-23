@@ -1,24 +1,43 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 
 import { BaseHtml } from "../components/base";
 import { Header } from "../components/header";
+import { SymbolIcon } from "../components/symbol";
 import db from "../db/db";
 import { Filename, Jobs } from "../db/types";
-import {
-  ALLOW_UNAUTHENTICATED,
-  BRANDING,
-  HIDE_HISTORY,
-  LANGUAGE,
-  TIMEZONE,
-  WEBROOT,
-} from "../helpers/env";
-import { DeleteIcon } from "../icons/delete";
-import { EyeIcon } from "../icons/eye";
+import { ALLOW_UNAUTHENTICATED, BRANDING, HIDE_HISTORY, TIMEZONE, WEBROOT } from "../helpers/env";
+import { resourceLimits } from "../helpers/resourceLimits";
 import { userService } from "./user";
+
+function jobStatus(status: string) {
+  if (status === "completed") return "已完成";
+  if (status === "failed") return "转换失败";
+  if (status === "pending") return "处理中";
+  return status === "not started" ? "未开始" : "状态未知";
+}
+
+function fileStatus(status: string) {
+  if (status === "Done") return "成功";
+  if (status === "File type not supported") return "不支持此文件类型";
+  if (status === "Failed, check logs") return "转换失败";
+  return "处理中";
+}
+
+function parsePage(value: string | undefined) {
+  if (!value || !/^\d+$/.test(value)) return 1;
+  const page = Number(value);
+  return Number.isSafeInteger(page) && page > 0 ? page : 1;
+}
+
+const HISTORY_PAGE_SIZE = resourceLimits.historyPageSize;
+
+function pageHref(page: number) {
+  return `${WEBROOT}/history?page=${page}`;
+}
 
 export const history = new Elysia().use(userService).get(
   "/history",
-  async ({ redirect, user }) => {
+  async ({ redirect, user, query }) => {
     if (HIDE_HISTORY) {
       return redirect(`${WEBROOT}/`, 302);
     }
@@ -27,20 +46,43 @@ export const history = new Elysia().use(userService).get(
       return redirect(`${WEBROOT}/login`, 302);
     }
 
-    let userJobs = db.query("SELECT * FROM jobs WHERE user_id = ?").as(Jobs).all(user.id).reverse();
-
+    const page = parsePage(query.page);
+    const totalRow = db
+      .query("SELECT COUNT(*) AS count FROM jobs WHERE user_id = ? AND num_files > 0")
+      .get(user.id) as { count: number };
+    const total = totalRow.count;
+    const totalPages = Math.max(1, Math.ceil(total / HISTORY_PAGE_SIZE));
+    const currentPage = Math.min(page, totalPages);
+    const offset = (currentPage - 1) * HISTORY_PAGE_SIZE;
+    const pageNumbers = [...new Set([1, currentPage - 1, currentPage, currentPage + 1, totalPages])]
+      .filter((pageNumber) => pageNumber >= 1 && pageNumber <= totalPages)
+      .sort((left, right) => left - right);
+    const userJobs = db
+      .query(
+        "SELECT * FROM jobs WHERE user_id = ? AND num_files > 0 ORDER BY id DESC LIMIT ? OFFSET ?",
+      )
+      .as(Jobs)
+      .all(user.id, HISTORY_PAGE_SIZE, offset);
+    const filesByJob = new Map<number, Filename[]>();
+    if (userJobs.length > 0) {
+      const placeholders = userJobs.map(() => "?").join(",");
+      const files = db
+        .query(`SELECT * FROM file_names WHERE job_id IN (${placeholders}) ORDER BY id`)
+        .as(Filename)
+        .all(...userJobs.map((job) => job.id));
+      for (const file of files) {
+        const list = filesByJob.get(file.job_id) ?? [];
+        list.push(file);
+        filesByJob.set(file.job_id, list);
+      }
+    }
     for (const job of userJobs) {
-      const files = db.query("SELECT * FROM file_names WHERE job_id = ?").as(Filename).all(job.id);
-
-      job.finished_files = files.length;
-      job.files_detailed = files;
+      job.files_detailed = filesByJob.get(job.id) ?? [];
+      job.finished_files = job.files_detailed.length;
     }
 
-    // Filter out jobs with no files
-    userJobs = userJobs.filter((job) => job.num_files > 0);
-
     return (
-      <BaseHtml webroot={WEBROOT} title="ConvertX | Results">
+      <BaseHtml webroot={WEBROOT} title={`${BRANDING} | 转换历史`}>
         <>
           <Header
             webroot={WEBROOT}
@@ -48,302 +90,304 @@ export const history = new Elysia().use(userService).get(
             allowUnauthenticated={ALLOW_UNAUTHENTICATED}
             hideHistory={HIDE_HISTORY}
             loggedIn
+            active="history"
           />
-          <main
-            class={`
-              w-full flex-1 px-2
-              sm:px-4
-            `}
-          >
-            <article class="article">
-              <div class="mb-4 flex items-center justify-between">
-                <h1 class="text-xl">Results</h1>
-                <div id="delete-selected-container">
-                  <button
-                    id="delete-selected-btn"
-                    class={`
-                      flex btn-secondary flex-row gap-2 text-contrast
-                      disabled:cursor-not-allowed disabled:opacity-50
-                    `}
-                    disabled
-                  >
-                    <DeleteIcon />{" "}
-                    <span>
-                      Delete Selected (<span id="selected-count">0</span>)
+          <main class="app-container sx-page" id="main-content" tabindex="-1">
+            <div class="page-heading sx-page-heading">
+              <span class="eyebrow">任务中心</span>
+              <h1>转换历史</h1>
+              <p class="muted">查看任务进度、文件结果，或清理不再需要的记录。</p>
+            </div>
+            {userJobs.length === 0 ? (
+              <section class="surface empty-state sx-empty-history">
+                <span class="sx-empty-mark">
+                  <SymbolIcon name="history" size={25} />
+                </span>
+                <h2>这里还没有转换记录</h2>
+                <p class="muted">开始一次转换后，任务和文件都会保存在这里。</p>
+                <a href={`${WEBROOT}/`} class="btn-primary">
+                  前往转换台 <SymbolIcon name="arrow" size={16} />
+                </a>
+              </section>
+            ) : (
+              <section class="surface sx-history-panel" aria-labelledby="sx-history-title">
+                <div class="sx-panel-head sx-history-head">
+                  <div>
+                    <h2 id="sx-history-title">任务列表</h2>
+                    <p class="muted">共 {userJobs.length} 个任务，按最近创建排序</p>
+                  </div>
+                  <div id="delete-selected-container" class="sx-selection-actions">
+                    <span id="selected-count" class="muted" aria-live="polite">
+                      已选择 0 项
                     </span>
-                  </button>
+                    <button
+                      id="delete-selected-btn"
+                      type="button"
+                      class="sx-danger btn-secondary"
+                      disabled
+                    >
+                      <SymbolIcon name="trash" size={16} /> <span>删除所选任务</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <table
-                class={`
-                  w-full table-auto overflow-y-auto rounded-sm bg-neutral-900 text-left
-                  [&_td]:p-4
-                  [&_tr]:rounded-sm [&_tr]:border-b [&_tr]:border-neutral-800
-                `}
-              >
-                <thead>
-                  <tr>
-                    <th
-                      class={`
-                        p-2
-                        sm:px-4
-                      `}
-                    >
-                      <input
-                        type="checkbox"
-                        id="select-all"
-                        class="size-4 cursor-pointer"
-                        title="Select all"
-                      />
-                    </th>
-                    <th
-                      class={`
-                        p-2
-                        sm:px-4
-                      `}
-                    >
-                      <span class="sr-only">Expand details</span>
-                    </th>
-                    <th
-                      class={`
-                        p-2
-                        sm:px-4
-                      `}
-                    >
-                      Time
-                    </th>
-                    <th
-                      class={`
-                        p-2
-                        sm:px-4
-                      `}
-                    >
-                      Files
-                    </th>
-                    <th
-                      class={`
-                        p-2
-                        max-sm:hidden
-                        sm:px-4
-                      `}
-                    >
-                      Files Done
-                    </th>
-                    <th
-                      class={`
-                        p-2
-                        sm:px-4
-                      `}
-                    >
-                      Status
-                    </th>
-                    <th
-                      class={`
-                        p-2
-                        sm:px-4
-                      `}
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {userJobs.map((job) => (
-                    <>
-                      <tr id={`job-row-${job.id}`}>
-                        <td>
-                          <input
-                            type="checkbox"
-                            class="size-4 cursor-pointer"
-                            data-checkbox-type="job"
-                            data-job-id={job.id}
-                          />
-                        </td>
-                        <td class="job-details-toggle cursor-pointer" data-job-id={job.id}>
-                          <svg
-                            id={`arrow-${job.id}`}
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.5"
-                            stroke="currentColor"
-                            class="inline-block size-4"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                            />
-                          </svg>
-                        </td>
-                        <td safe>
-                          {new Date(job.date_created).toLocaleTimeString(LANGUAGE, {
-                            timeZone: TIMEZONE,
-                          })}
-                        </td>
-                        <td>{job.num_files}</td>
-                        <td class="max-sm:hidden">{job.finished_files}</td>
-                        <td safe>{job.status}</td>
-                        <td class="flex flex-row gap-4">
-                          <a
-                            class={`
-                              text-accent-500 underline
-                              hover:text-accent-400
-                            `}
-                            href={`${WEBROOT}/results/${job.id}`}
-                          >
-                            <EyeIcon />
-                          </a>
-                          <form action={`${WEBROOT}/delete/${job.id}`} method="POST" class="inline">
-                            <button
-                              type="submit"
-                              class={`
-                                text-accent-500 underline
-                                hover:text-accent-400
-                              `}
-                            >
-                              <DeleteIcon />
-                            </button>
-                          </form>
-                        </td>
+                <div class="sx-table-wrap">
+                  <table class="sx-table sx-history-table">
+                    <thead>
+                      <tr>
+                        <th scope="col" class="sx-check-cell">
+                          <input type="checkbox" id="select-all" aria-label="选择全部任务" />
+                        </th>
+                        <th scope="col">文件</th>
+                        <th scope="col">创建时间</th>
+                        <th scope="col">状态</th>
+                        <th scope="col">操作</th>
                       </tr>
-                      <tr id={`details-${job.id}`} class="hidden">
-                        <td colspan="7">
-                          <div class="p-2 text-sm text-neutral-500">
-                            <div class="mb-1 font-semibold">Detailed File Information:</div>
-                            {job.files_detailed.map((file: Filename) => (
-                              <div class="flex items-center">
-                                <span class="w-5/12 truncate" title={file.file_name} safe>
-                                  {file.file_name}
-                                </span>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                  class={`mx-2 inline-block size-4 text-neutral-500`}
+                    </thead>
+                    <tbody>
+                      {userJobs.map((job) => {
+                        const firstFile = job.files_detailed[0];
+                        const date = new Date(job.date_created).toLocaleString("zh-CN", {
+                          timeZone: TIMEZONE,
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        });
+                        const done = job.status === "completed";
+                        const failed = job.status === "failed";
+                        return (
+                          <tr id={`job-row-${job.id}`}>
+                            <td class="sx-check-cell">
+                              <input
+                                type="checkbox"
+                                data-checkbox-type="job"
+                                data-job-id={job.id}
+                                aria-label={`选择任务 ${job.id}`}
+                              />
+                            </td>
+                            <td>
+                              <details class="sx-history-details">
+                                <summary>
+                                  <span class="sx-file-icon">
+                                    <SymbolIcon name="file" size={17} />
+                                  </span>
+                                  <span
+                                    class="sx-history-file-name"
+                                    title={firstFile?.file_name}
+                                    safe
+                                  >
+                                    {firstFile?.file_name ?? "文件信息处理中"}
+                                  </span>
+                                  <span class="badge sx-file-count">{job.num_files} 个文件</span>
+                                  <span class="sx-details-label">
+                                    文件清单 <SymbolIcon name="chevron" size={14} />
+                                  </span>
+                                </summary>
+                                <div class="sx-detail-list" id={`details-${job.id}`}>
+                                  {job.files_detailed.map((file: Filename) => (
+                                    <div class="sx-detail-row">
+                                      <span class="sx-detail-name" title={file.file_name} safe>
+                                        {file.file_name}
+                                      </span>
+                                      <SymbolIcon name="arrow" size={15} />
+                                      <span
+                                        class="sx-detail-name"
+                                        title={file.output_file_name}
+                                        safe
+                                      >
+                                        {file.output_file_name}
+                                      </span>
+                                      <span
+                                        class={`
+                                          badge
+                                          ${
+                                            file.status === "Done"
+                                              ? "sx-badge-success"
+                                              : `sx-badge-warning`
+                                          }
+                                        `}
+                                        title={fileStatus(file.status)}
+                                      >
+                                        {fileStatus(file.status)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            </td>
+                            <td class="sx-date-cell">
+                              <time datetime={job.date_created} safe>
+                                {date}
+                              </time>
+                            </td>
+                            <td>
+                              <span
+                                class={`
+                                  badge
+                                  ${
+                                    done
+                                      ? "sx-badge-success"
+                                      : failed
+                                        ? `sx-badge-warning`
+                                        : `sx-badge-pending`
+                                  }
+                                `}
+                                title={jobStatus(job.status)}
+                              >
+                                <span class="sx-status-dot" />
+                                {jobStatus(job.status)}
+                              </span>
+                            </td>
+                            <td>
+                              <div class="sx-actions sx-history-actions">
+                                <a
+                                  href={`${WEBROOT}/results/${job.id}`}
+                                  class="sx-text-action"
+                                  aria-label={`查看任务 ${job.id} 结果`}
                                 >
-                                  <path
-                                    fill-rule="evenodd"
-                                    d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"
-                                  />
-                                </svg>
-                                <span class="w-5/12 truncate" title={file.output_file_name} safe>
-                                  {file.output_file_name}
-                                </span>
+                                  <SymbolIcon name="arrow" size={16} /> 查看
+                                </a>
+                                <form
+                                  action={`${WEBROOT}/delete/${job.id}`}
+                                  method="POST"
+                                  data-confirm-delete
+                                >
+                                  <button
+                                    type="submit"
+                                    class="sx-icon-danger"
+                                    aria-label={`删除任务 ${job.id}`}
+                                    title="删除任务"
+                                  >
+                                    <SymbolIcon name="trash" size={17} />
+                                  </button>
+                                </form>
                               </div>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+            {total > 0 ? (
+              <nav class="sx-history-pagination" aria-label="转换历史分页">
+                <span class="sx-history-page-summary">
+                  第 {currentPage} / {totalPages} 页，共 {total} 个任务
+                </span>
+                <div class="sx-history-page-links">
+                  {currentPage > 1 ? (
+                    <a class="sx-text-action" href={pageHref(currentPage - 1)} rel="prev">
+                      <SymbolIcon name="arrow" size={15} /> 上一页
+                    </a>
+                  ) : (
+                    <span class="sx-text-action is-disabled" aria-disabled="true">
+                      上一页
+                    </span>
+                  )}
+                  {pageNumbers.map((pageNumber, index) => (
+                    <>
+                      {index > 0 && pageNumber - pageNumbers[index - 1]! > 1 ? (
+                        <span class="sx-history-page-gap" aria-hidden="true">
+                          …
+                        </span>
+                      ) : null}
+                      {pageNumber === currentPage ? (
+                        <span class="sx-history-page is-current" aria-current="page">
+                          {pageNumber}
+                        </span>
+                      ) : (
+                        <a class="sx-history-page" href={pageHref(pageNumber)}>
+                          {pageNumber}
+                        </a>
+                      )}
                     </>
                   ))}
-                </tbody>
-              </table>
-            </article>
+                  {currentPage < totalPages ? (
+                    <a class="sx-text-action" href={pageHref(currentPage + 1)} rel="next">
+                      下一页 <SymbolIcon name="arrow" size={15} />
+                    </a>
+                  ) : (
+                    <span class="sx-text-action is-disabled" aria-disabled="true">
+                      下一页
+                    </span>
+                  )}
+                </div>
+              </nav>
+            ) : null}
           </main>
           <script>
             {`
-              document.addEventListener('DOMContentLoaded', () => {
-                // Expand/collapse job details
-                const toggles = document.querySelectorAll('.job-details-toggle');
-                toggles.forEach(toggle => {
-                  toggle.addEventListener('click', function() {
-                    const jobId = this.dataset.jobId;
-                    const detailsRow = document.getElementById(\`details-\${jobId}\`);
-                    const arrow = document.getElementById(\`arrow-\${jobId}\`);
+              (() => {
+                const checkboxes = Array.from(document.querySelectorAll('[data-checkbox-type="job"]'));
+                const selectAll = document.getElementById('select-all');
+                const deleteButton = document.getElementById('delete-selected-btn');
+                const selectedCount = document.getElementById('selected-count');
+                const main = document.getElementById('main-content');
+                const webroot = document.querySelector("meta[name='webroot']")?.content ?? '';
 
-                    if (detailsRow && arrow) {
-                      detailsRow.classList.toggle("hidden");
-                      if (detailsRow.classList.contains("hidden")) {
-                        arrow.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />';
-                      } else {
-                        arrow.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />';
-                      }
-                    }
-                  });
-                });
-
-                // Checkbox management
-                const selectAllCheckbox = document.getElementById('select-all');
-                const jobCheckboxes = document.querySelectorAll('[data-checkbox-type="job"]');
-                const deleteSelectedBtn = document.getElementById('delete-selected-btn');
-                const deleteSelectedContainer = document.getElementById('delete-selected-container');
-                const selectedCountSpan = document.getElementById('selected-count');
-
-                function updateDeleteButton() {
-                  const checkedBoxes = Array.from(jobCheckboxes).filter(cb => cb.checked);
-                  if (checkedBoxes.length > 0) {
-                    deleteSelectedBtn.disabled = false;
-                    selectedCountSpan.textContent = checkedBoxes.length;
-                  } else {
-                    deleteSelectedBtn.disabled = true;
-                    selectedCountSpan.textContent = '0';
+                const updateSelection = () => {
+                  const selected = checkboxes.filter((checkbox) => checkbox.checked);
+                  if (selectedCount) selectedCount.textContent = '已选择 ' + selected.length + ' 项';
+                  if (deleteButton) deleteButton.disabled = selected.length === 0;
+                  if (selectAll) {
+                    selectAll.checked = checkboxes.length > 0 && selected.length === checkboxes.length;
+                    selectAll.indeterminate = selected.length > 0 && selected.length < checkboxes.length;
                   }
-                }
+                };
 
-                selectAllCheckbox?.addEventListener('change', function() {
-                  jobCheckboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                  });
-                  updateDeleteButton();
+                selectAll?.addEventListener('change', () => {
+                  checkboxes.forEach((checkbox) => { checkbox.checked = selectAll.checked; });
+                  updateSelection();
+                });
+                checkboxes.forEach((checkbox) => checkbox.addEventListener('change', updateSelection));
+
+                main?.addEventListener('submit', (event) => {
+                  const form = event.target.closest('form[data-confirm-delete]');
+                  if (form && !window.confirm('确定删除此转换任务及其文件吗？此操作无法撤销。')) event.preventDefault();
                 });
 
-                jobCheckboxes.forEach(checkbox => {
-                  checkbox.addEventListener('change', function() {
-                    const allChecked = Array.from(jobCheckboxes).every(cb => cb.checked);
-                    const someChecked = Array.from(jobCheckboxes).some(cb => cb.checked);
-                    if (selectAllCheckbox) {
-                      selectAllCheckbox.checked = allChecked;
-                      selectAllCheckbox.indeterminate = someChecked && !allChecked;
-                    }
-                    updateDeleteButton();
-                  });
-                });
-
-                deleteSelectedBtn?.addEventListener('click', async function() {
-                  const checkedBoxes = Array.from(jobCheckboxes).filter(cb => cb.checked);
-                  const jobIds = checkedBoxes.map(cb => cb.dataset.jobId);
-
-                  if (jobIds.length === 0) return;
-
-                  const confirmed = confirm(\`Are you sure you want to delete \${jobIds.length} job(s)? This action cannot be undone.\`);
-                  if (!confirmed) return;
-
+                deleteButton?.addEventListener('click', async () => {
+                  const jobIds = checkboxes.filter((checkbox) => checkbox.checked).map((checkbox) => checkbox.dataset.jobId);
+                  if (jobIds.length === 0 || !window.confirm('确定删除选中的 ' + jobIds.length + ' 个任务吗？此操作无法撤销。')) return;
+                  deleteButton.disabled = true;
+                  deleteButton.setAttribute('aria-busy', 'true');
+                  const label = deleteButton.querySelector('span');
+                  if (label) label.textContent = '正在删除…';
                   try {
-                    const response = await fetch('${WEBROOT}/delete-multiple', {
+                    const response = await fetch(webroot + '/delete-multiple', {
                       method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
+                      credentials: 'same-origin',
+                      headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ jobIds }),
                     });
-
-                    if (!response.ok) {
-                      throw new Error(\`HTTP error! status: \${response.status}\`);
-                    }
-
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
                     const result = await response.json();
-
-                    if (result.success || result.deleted > 0) {
-                      alert(\`Successfully deleted \${result.deleted} job(s).\${result.failed > 0 ? \` Failed to delete \${result.failed} job(s).\` : ''}\`);
+                    if (result.deleted > 0) {
+                      window.alert('已删除 ' + result.deleted + ' 个任务。' + (result.failed > 0 ? '有 ' + result.failed + ' 个任务未能删除。' : ''));
                       window.location.reload();
                     } else {
-                      alert('Failed to delete jobs. Please try again.');
+                      window.alert('暂时无法删除任务，请稍后重试。');
+                      deleteButton.disabled = false;
                     }
                   } catch (error) {
-                    console.error('Error deleting jobs:', error);
-                    alert('An error occurred while deleting jobs. Please try again.');
+                    console.warn('Unable to delete selected jobs', error);
+                    window.alert('删除请求失败，请检查网络后重试。');
+                    deleteButton.disabled = false;
+                  } finally {
+                    deleteButton.removeAttribute('aria-busy');
+                    if (label) label.textContent = '删除所选任务';
                   }
                 });
-              });
+                updateSelection();
+              })();
             `}
           </script>
         </>
       </BaseHtml>
     );
   },
-  {
-    auth: true,
-  },
+  { auth: true, query: t.Object({ page: t.Optional(t.String()) }) },
 );
